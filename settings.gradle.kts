@@ -31,5 +31,6 @@ dependencyResolutionManagement {
     }
 }
 include(":FirebaseCore")
+include(":FirebaseMessaging")
 include(":simple:composeApp")
 

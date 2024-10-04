@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.compose)
     alias(libs.plugins.android.application)
+    alias(libs.plugins.google.services)
 }
 
 kotlin {
@@ -33,12 +34,7 @@ kotlin {
         }
     }
 
-    jvm()
 
-    wasmJs {
-        browser()
-        binaries.executable()
-    }
 
     listOf(
         iosX64(),
@@ -58,6 +54,10 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+
+            implementation(project(":FirebaseCore"))
+            implementation(project(":FirebaseMessaging"))
+
         }
 
         commonTest.dependencies {
@@ -71,9 +71,6 @@ kotlin {
             implementation(libs.androidx.activityCompose)
         }
 
-        jvmMain.dependencies {
-            implementation(compose.desktop.currentOs)
-        }
 
         iosMain.dependencies {
         }

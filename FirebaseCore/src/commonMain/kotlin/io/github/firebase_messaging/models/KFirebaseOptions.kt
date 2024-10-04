@@ -1,4 +1,4 @@
-package io.github.firebase_core.models
+package io.github.firebase_messaging.models
 
 data class KFirebaseAppDetails(
     val name: String?,

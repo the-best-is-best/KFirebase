@@ -1,9 +1,9 @@
-package io.github.firebase_core
+package io.github.firebase_messaging
 
 import com.google.firebase.Firebase
 import com.google.firebase.app
-import io.github.firebase_core.models.KFirebaseAppDetails
-import io.github.firebase_core.models.KFirebaseOptions
+import io.github.firebase_messaging.models.KFirebaseAppDetails
+import io.github.firebase_messaging.models.KFirebaseOptions
 
 actual object KFirebaseCore {
     actual fun app(name: String): KFirebaseAppDetails {

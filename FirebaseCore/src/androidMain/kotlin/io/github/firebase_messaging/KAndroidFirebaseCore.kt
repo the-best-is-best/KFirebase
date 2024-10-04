@@ -1,4 +1,4 @@
-package io.github.firebase_core
+package io.github.firebase_messaging
 
 import android.content.Context
 import com.google.firebase.Firebase
