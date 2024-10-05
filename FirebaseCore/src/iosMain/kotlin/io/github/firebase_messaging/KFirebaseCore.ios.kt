@@ -7,8 +7,8 @@ import kotlinx.cinterop.ExperimentalForeignApi
 
 actual object KFirebaseCore {
     @OptIn(ExperimentalForeignApi::class)
-    actual fun app(name: String): KFirebaseAppDetails {
-        val appDetails = FIRApp.appNamed(name)
+    actual fun app(): KFirebaseAppDetails {
+        val appDetails = FIRApp.defaultApp()
 
         return KFirebaseAppDetails(
             name = appDetails?.name,

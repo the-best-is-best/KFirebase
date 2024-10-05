@@ -6,8 +6,8 @@ import io.github.firebase_messaging.models.KFirebaseAppDetails
 import io.github.firebase_messaging.models.KFirebaseOptions
 
 actual object KFirebaseCore {
-    actual fun app(name: String): KFirebaseAppDetails {
-        val appDetails = Firebase.app(name)
+    actual fun app(): KFirebaseAppDetails {
+        val appDetails = Firebase.app
         return KFirebaseAppDetails(
             name = appDetails.name,
             options = KFirebaseOptions(
