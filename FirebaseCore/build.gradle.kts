@@ -12,7 +12,6 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.android.library)
     alias(libs.plugins.native.cocoapods)
-    alias(libs.plugins.google.services)
 
     id("maven-publish")
     id("signing")
@@ -175,13 +174,9 @@ kotlin {
 
         }
 
-        jvmMain.dependencies {
-            implementation(compose.desktop.currentOs)
-        }
 
-        jsMain.dependencies {
-            implementation(compose.html.core)
-        }
+
+
 
         iosMain.dependencies {
         }

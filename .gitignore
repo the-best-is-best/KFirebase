@@ -16,3 +16,4 @@ Pods/
 *yarn.lock
 /simple/iosApp/GoogleService-Info.plist
 simple/iosApp/Podfile.lock
+simple/composeApp/google-services.json
