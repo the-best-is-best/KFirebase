@@ -43,7 +43,7 @@ tasks.withType<PublishToMavenRepository> {
 
 
 mavenPublishing {
-    coordinates("io.github.the-best-is-best", "kfirebase-core", "1.0.0-1-rc")
+    coordinates("io.github.the-best-is-best", "kfirebase-core", libs.versions.me.get())
 
     publishToMavenCentral(SonatypeHost.S01)
     signAllPublications()
@@ -145,7 +145,7 @@ kotlin {
         ios.deploymentTarget = "13.0"  // Update this to the required version
 
         pod("FirebaseCore") {
-            version = "11.3.0"
+            version = libs.versions.podFirebase.get()
             extraOpts += listOf("-compiler-option", "-fmodules")
 
         }
@@ -216,5 +216,14 @@ compose.desktop {
             packageName = "io.github.KFirebaseCore.desktopApp"
             packageVersion = "1.0.0"
         }
+    }
+}
+
+tasks.register<Copy>("updateReadme") {
+    doLast {
+        val version = libs.versions.me.get()
+        val readmeFile = file("README.md")
+        val content = readmeFile.readText().replace(Regex("Me Library: .*"), "Me Library: `$version`")
+        readmeFile.writeText(content)
     }
 }

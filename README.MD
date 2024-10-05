@@ -1,41 +1,6 @@
 # KFirebase
 
-<style>
-  .padding {
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-</style>
-
-    ### androidMain
-
-<details>
-  <summary>FirebaseCore</summary>
-
-  <br>
-
-  <div class="padding">
-    <details>
-      <summary>Android</summary>
-      <br>
-       <details>
-        <summary> androidMain </summary>
-         <br>
-            <div class="padding">
-                KAndroidFirebaseCore.initialize(this)
-             </div>
-       </details>
-    </details>
-  </div>
-
-  <br>
-
-  <div class="padding">
-    <details>
-      <summary>iOS</summary>
-      <br>
-      Add your iOS-specific information or content here.
-    </details>
-  </div>
-
-</details>
+| Name packages   | status   |   Readme
+| ------------ | ------------ | ------------ |
+|  1.  Firebase Core |  completed | <a href="https://github.com/the-best-is-best/KFirebase/blob/main/FirebaseCore/readme.md">Click me</a>
+| 2. Firebase messanging | development   | none

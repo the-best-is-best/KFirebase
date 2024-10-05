@@ -15,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.firebase_messaging.KFirebaseCore
 import io.github.firebase_messaging.KFirebaseMessaging
 import io.github.sample.theme.AppTheme
 
@@ -22,7 +23,8 @@ import io.github.sample.theme.AppTheme
 internal fun App() = AppTheme {
     val fcm = KFirebaseMessaging.create()
     LaunchedEffect(Unit) {
-
+        val app = KFirebaseCore.app()
+        println(app.options)
         fcm.setNotificationClickedListener { it ->
             it.onSuccess {
                 println("key 1 clicked ${it?.get("token")}")

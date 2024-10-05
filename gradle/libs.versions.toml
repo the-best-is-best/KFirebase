@@ -1,4 +1,6 @@
 [versions]
+me = "1.0.0-rc2-SNAPSHOT"
+podFirebase = "11.3.0"
 kotlin = "2.0.21-RC"
 compose = "1.7.0-beta02"
 agp = "8.7.0"
