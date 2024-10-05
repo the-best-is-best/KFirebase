@@ -20,13 +20,27 @@ import io.github.sample.theme.AppTheme
 
 @Composable
 internal fun App() = AppTheme {
-    val fcm = KFirebaseMessaging()
+    val fcm = KFirebaseMessaging.create()
     LaunchedEffect(Unit) {
-        fcm.onNotificationReceived {
-            println("notification $it")
-        }
-    }
 
+        fcm.setNotificationClickedListener { it ->
+            it.onSuccess {
+                println("key 1 clicked ${it?.get("token")}")
+            }
+        }
+
+        fcm.setNotificationListener { it ->
+            it.onSuccess {
+                println("key 1 received ${it?.get("email")}")
+            }
+        }
+        fcm.setTokenListener { it ->
+            it.onSuccess {
+                println("user token $it")
+            }
+        }
+
+    }
 
     Column(
         modifier = Modifier
@@ -53,6 +67,19 @@ internal fun App() = AppTheme {
             }
         }) {
             Text("Get token")
+        }
+        Spacer(Modifier.height(30.dp))
+        ElevatedButton(onClick = {
+            fcm.subscribeTopic("topic_test")
+        }) {
+            Text("subscribe topic")
+        }
+
+        Spacer(Modifier.height(30.dp))
+        ElevatedButton(onClick = {
+            fcm.unsubscribeTopic("topic_test")
+        }) {
+            Text("un subscribe topic")
         }
     }
 }

@@ -145,18 +145,10 @@ kotlin {
         ios.deploymentTarget = "13.0"  // Update this to the required version
 
         pod("KFirebaseMessaging") {
-            version = "0.1.0-beta.2"
+            version = "0.1.0-beta.6"
             extraOpts += listOf("-compiler-option", "-fmodules")
 
         }
-
-        pod("FirebaseMessaging") {
-            version = "11.3.0"
-            extraOpts += listOf("-compiler-option", "-fmodules")
-
-        }
-
-
     }
 
     sourceSets {

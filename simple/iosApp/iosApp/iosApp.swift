@@ -3,6 +3,7 @@ import UserNotifications
 import Firebase
 import KFirebaseMessaging // Replace this with the actual module name
 import ComposeApp
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
     
@@ -11,12 +12,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     // This function is called when the app starts
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Firebase initialization
-//        FirebaseApp.configure()
+        FirebaseApp.configure()
 
         // Initialize Firebase messaging delegate and notification center delegate
         let firebaseMessaging = KFirebaseMessaging.shared
         firebaseMessaging.initDelegate(notificationDelegate: self, messagesDelegate: self)
-        
+        firebaseMessaging.requestAuthorization()
         // Request notifications permissions
         
         window = UIWindow(frame: UIScreen.main.bounds)
