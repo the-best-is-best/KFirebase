@@ -57,6 +57,7 @@ kotlin {
 
             implementation(project(":FirebaseCore"))
             implementation(project(":FirebaseMessaging"))
+            implementation(project(":FirebaseAnalytics"))
 
         }
 
@@ -87,7 +88,7 @@ android {
     defaultConfig {
         minSdk = 26
 
-        applicationId = "com.u52ndsolution.syl_app"
+        applicationId = "com.tbib.codyTech"
         versionCode = 1
         versionName = "1.0.0"
 
