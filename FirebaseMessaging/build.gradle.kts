@@ -170,8 +170,12 @@ kotlin {
             implementation(libs.androidx.activityCompose)
             implementation(libs.firebase.common.ktx)
             implementation(libs.firebase.messaging)
+            implementation(libs.gson)
             implementation(project(":FirebaseCore"))
-
+            //noinspection GradleDependency
+            implementation(libs.kpermissions)
+            implementation(libs.firebase.analytics)
+            implementation(libs.firebase.messaging.directboot)
 
         }
 
@@ -186,7 +190,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.KFirebaseCore"
+    namespace = "io.github.FirebaseMessaging"
     compileSdk = 35
 
     defaultConfig {
@@ -209,7 +213,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "io.github.KFirebaseCore.desktopApp"
+            packageName = "io.github.FirebaseMessaging.desktopApp"
             packageVersion = "1.0.0"
         }
     }

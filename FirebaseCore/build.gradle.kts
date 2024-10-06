@@ -171,6 +171,7 @@ kotlin {
             implementation(compose.uiTooling)
             implementation(libs.androidx.activityCompose)
             implementation(libs.firebase.common.ktx)
+            implementation(libs.kpermissions)
 
         }
 

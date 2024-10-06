@@ -2,49 +2,39 @@
 
 package io.github.firebase_messaging
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import io.github.kpermissions.enum.EnumAppPermission
+import io.github.kpermissions.handler.PermissionHandler
 
-
-class KFirebaseMessagingImpl : KFirebaseMessaging {
-    internal var tokenListener: ((Result<String?>) -> Unit)? = null
-    internal var notificationListener: ((Result<Map<Any?, *>?>) -> Unit)? = null
+object KFirebaseMessagingImpl : KFirebaseMessaging {
+    private var tokenListener: ((Result<String?>) -> Unit)? = null
+    private var notificationListener: ((Result<Map<Any?, *>?>) -> Unit)? = null
     private var notificationClickedListener: ((Result<Map<Any?, *>?>) -> Unit)? = null
 
-
     override fun setTokenListener(callback: (Result<String?>) -> Unit) {
-        this.tokenListener = callback
-        // Get the current token
-        getToken(callback)
+        tokenListener = callback
     }
 
     override fun setNotificationListener(callback: (Result<Map<Any?, *>?>) -> Unit) {
-        this.notificationListener = callback
+        notificationListener = callback
     }
 
     override fun setNotificationClickedListener(callback: (Result<Map<Any?, *>?>) -> Unit) {
-        this.notificationClickedListener = callback
+        notificationClickedListener = callback
     }
 
-    override fun requestAuthorization() {
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.TIRAMISU) {
-            val hasPermission = ContextCompat.checkSelfPermission(
-                KAndroidFirebaseCore.context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-
-            if (!hasPermission) {
-                ActivityCompat.requestPermissions(
-                    KAndroidFirebaseCore.context,
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                    0
-                )
-
+    override fun requestAuthorization(callback: (Result<Boolean>) -> Unit) {
+        val permission = PermissionHandler()
+        permission.requestPermission(EnumAppPermission.NOTIFICATION) { granted ->
+            if (!granted) {
+                permission.openAppSettings()
             }
+            callback(Result.success(granted))
         }
     }
 
@@ -58,23 +48,73 @@ class KFirebaseMessagingImpl : KFirebaseMessaging {
         }
     }
 
-    override fun subscribeTopic(name: String) {
+    override fun subscribeTopic(name: String, callback: (Result<Boolean>) -> Unit) {
         FirebaseMessaging.getInstance().subscribeToTopic(name)
             .addOnCompleteListener { task ->
-
+                if (task.isSuccessful) {
+                    callback(Result.success(true))
+                } else {
+                    callback(Result.failure(Exception(task.exception)))
+                }
             }
     }
 
-    override fun unsubscribeTopic(name: String) {
+    override fun unsubscribeTopic(name: String, callback: (Result<Boolean>) -> Unit) {
         FirebaseMessaging.getInstance().unsubscribeFromTopic(name)
             .addOnCompleteListener { task ->
-                // Handle completion
+                if (task.isSuccessful) {
+                    callback(Result.success(true))
+                } else {
+                    callback(Result.failure(Exception(task.exception)))
+                }
             }
     }
 
+    internal fun notifyTokenRefreshed(newToken: String) {
+        tokenListener?.invoke(Result.success(newToken))
+    }
 
+    internal fun notifyNotificationReceived(data: Map<Any?, *>) {
+        notificationListener?.invoke(Result.success(data))
+    }
+
+    internal fun notifyNotificationClicked(dataJson: String) {
+        Handler(Looper.getMainLooper()).postDelayed({
+
+            val type =
+                object :
+                    TypeToken<Map<String, String>>() {}.type // Define the type for deserialization
+            val yourDataMap: Map<Any?, *> =
+                Gson().fromJson(dataJson, type) // Deserialize back to a map
+            if (yourDataMap.isNotEmpty()) {
+                notificationClickedListener?.invoke(Result.success(yourDataMap))
+            }
+        }, 500)
+    }
+
+    fun notifyNotificationBackgroundClicked(dataBundle: Bundle) {
+        if (!dataBundle.isEmpty()) {
+            // Create a map to store the key-value pairs
+            val dataMap = mutableMapOf<String, String>()
+
+            // Iterate over the keys in the Bundle (extras)
+            for (key in dataBundle.keySet()) {
+                // Get the value associated with the key
+                val value = dataBundle.getString(key)
+                // Add to the map if the value is not null
+                if (value != null) {
+                    dataMap[key] = value
+                }
+            }
+
+            // Convert the map to a JSON string using Gson
+            val jsonString = Gson().toJson(dataMap)
+            notifyNotificationClicked(jsonString)
+
+        }
+    }
 }
 
 actual fun getPlatformFirebaseMessaging(): KFirebaseMessaging {
-    return KFirebaseMessagingImpl()
+    return KFirebaseMessagingImpl
 }

@@ -4,11 +4,15 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import com.google.firebase.Firebase
 import com.google.firebase.initialize
+import io.github.kpermissions.handler.PermissionHandler
 
 @SuppressLint("StaticFieldLeak")
-object KAndroidFirebaseCore {
+object AndroidKFirebaseCore {
     lateinit var context: Activity
     fun initialize(context: Activity) {
+        PermissionHandler.init(context)
+
+
         this.context = context
         Firebase.initialize(context = context)
     }

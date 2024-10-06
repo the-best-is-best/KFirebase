@@ -1,5 +1,8 @@
 [versions]
+firebaseAnalytics = "22.1.2"
 firebaseMessaging = "24.0.2"
+gson = "2.11.0"
+kpermissions = "1.0.3"
 me = "1.0.0-rc2-SNAPSHOT"
 podFirebase = "11.3.0"
 kotlin = "2.0.21-RC"
@@ -15,8 +18,12 @@ firebaseCommonKtx = "21.0.0"
 androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-testManifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-uiTest" }
 androidx-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-uiTest" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics", version.ref = "firebaseAnalytics" }
 firebase-common-ktx = { group = "com.google.firebase", name = "firebase-common-ktx", version.ref = "firebaseCommonKtx" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging", version.ref = "firebaseMessaging" }
+firebase-messaging-directboot = { module = "com.google.firebase:firebase-messaging-directboot", version.ref = "firebaseMessaging" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+kpermissions = { module = "io.github.the-best-is-best:KPermissions", version.ref = "kpermissions" }
 
 [plugins]
 native-cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }

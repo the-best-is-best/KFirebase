@@ -6,10 +6,10 @@ interface KFirebaseMessaging {
     fun setTokenListener(callback: (Result<String?>) -> Unit)
     fun setNotificationListener(callback: (Result<Map<Any?, *>?>) -> Unit)
     fun setNotificationClickedListener(callback: (Result<Map<Any?, *>?>) -> Unit)
-    fun requestAuthorization()
+    fun requestAuthorization(callback: (Result<Boolean>) -> Unit)
     fun getToken(callback: (Result<String?>) -> Unit)
-    fun subscribeTopic(name: String)
-    fun unsubscribeTopic(name: String)
+    fun subscribeTopic(name: String, callback: (Result<Boolean>) -> Unit)
+    fun unsubscribeTopic(name: String, callback: (Result<Boolean>) -> Unit)
 
 
     companion object {

@@ -69,6 +69,8 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.uiTooling)
             implementation(libs.androidx.activityCompose)
+
+
         }
 
 
@@ -84,9 +86,8 @@ android {
 
     defaultConfig {
         minSdk = 26
-        targetSdk = 34
 
-        applicationId = "io.github.sample.androidApp"
+        applicationId = "com.u52ndsolution.syl_app"
         versionCode = 1
         versionName = "1.0.0"
 

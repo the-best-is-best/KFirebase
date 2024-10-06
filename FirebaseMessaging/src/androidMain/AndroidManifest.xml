@@ -1,15 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application>
         <service
             android:name="io.github.firebase_messaging.KFirebaseMessagingService"
-            android:exported="false">
+            android:directBootAware="true"
+            android:exported="false"
+            tools:ignore="UnusedAttribute">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+        <receiver
+            android:name="io.github.firebase_messaging.KFirebaseNotificationClickReceiver"
+            android:enabled="true"
+            android:exported="false" />
+        <service
+            android:name="io.github.firebase_messaging.KFirebaseNotificationClickJobService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 </manifest>
