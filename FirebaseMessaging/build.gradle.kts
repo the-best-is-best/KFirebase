@@ -42,14 +42,14 @@ tasks.withType<PublishToMavenRepository> {
 
 
 mavenPublishing {
-    coordinates("io.github.the-best-is-best", "kfirebase-core", "1.0.0-1-rc")
+    coordinates("io.github.the-best-is-best", "kfirebase-messaging", libs.versions.me.get())
 
     publishToMavenCentral(SonatypeHost.S01)
     signAllPublications()
 
     pom {
-        name.set("KFirebaseCore")
-        description.set("KFirebaseCore is a Kotlin Multiplatform library designed to streamline the integration of Firebase services in your mobile applications. With this library, developers can effortlessly initialize Firebase for both Android and iOS, enabling a unified and efficient development experience.")
+        name.set("KFirebaseMessaging")
+        description.set("KFirebaseMessaging is a Kotlin Multiplatform Mobile (KMM) package that simplifies the integration of Firebase Cloud Messaging (FCM) across Android and iOS platforms. It provides a unified API for handling push notifications and FCM messaging in a shared codebase, allowing developers to seamlessly implement FCM functionality for both platforms without duplicating code.")
         url.set("https://github.com/the-best-is-best/KFirebase")
         licenses {
             license {
@@ -124,7 +124,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "FirebaseMessaging"
+            baseName = "KFirebaseMessaging"
             isStatic = true
         }
     }
@@ -135,16 +135,16 @@ kotlin {
 
         // Optional properties
         // Configure the Pod name here instead of changing the Gradle project name
-        name = "FirebaseMessaging"
+        name = "KFirebaseMessaging"
 
         framework {
-            baseName = "FirebaseMessaging"
+            baseName = "KFirebaseMessaging"
         }
         noPodspec()
         ios.deploymentTarget = "13.0"  // Update this to the required version
 
         pod("KFirebaseMessaging") {
-            version = "0.1.0-beta.6"
+            version = "0.1.0-rc.1"
             extraOpts += listOf("-compiler-option", "-fmodules")
 
         }
@@ -190,7 +190,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.FirebaseMessaging"
+    namespace = "io.github.KFirebaseMessaging"
     compileSdk = 35
 
     defaultConfig {

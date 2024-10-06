@@ -30,7 +30,6 @@ internal fun App() = AppTheme {
     println(app.options) // Check this log
 
     // Log when setting listeners
-    println("Setting notification clicked listener")
         fcm.setNotificationClickedListener { it ->
             it.onSuccess { data ->
                 println("Notification clicked data: $data")
@@ -38,7 +37,6 @@ internal fun App() = AppTheme {
             }
         }
 
-    println("Setting notification listener")
         fcm.setNotificationListener { it ->
             it.onSuccess { data ->
                 println("Notification received data: $data")
@@ -46,7 +44,6 @@ internal fun App() = AppTheme {
             }
         }
 
-    println("Setting token listener")
         fcm.setTokenListener { it ->
             it.onSuccess { token ->
                 println("User token: $token")

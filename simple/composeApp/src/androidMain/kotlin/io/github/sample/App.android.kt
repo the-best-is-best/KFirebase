@@ -23,10 +23,7 @@ class AppActivity : ComponentActivity() {
         )
         val dataBundle = intent.extras
         if (dataBundle != null) {
-            // Now pass the JSON string to the notifyNotificationClicked method
             KFirebaseMessagingImpl.notifyNotificationBackgroundClicked(dataBundle)
-
-            // Logging for debugging purposes
         }
         setContent { App() }
     }
