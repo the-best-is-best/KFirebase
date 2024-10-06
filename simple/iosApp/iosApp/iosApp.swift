@@ -4,7 +4,7 @@ import Firebase
 import KFirebaseMessaging // Replace this with the actual module name
 import ComposeApp
 
-@UIApplicationMain
+@main
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
     
     var window: UIWindow?
@@ -24,6 +24,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         if let window = window {
             window.rootViewController = MainKt.MainViewController()
             window.makeKeyAndVisible()
+        }
+        if let remoteNotification = launchOptions?[.remoteNotification] as? [String: AnyObject] {
+            
+            KFirebaseMessaging.shared.notifyMessagingClicked(remoteNotification)
         }
             return true
     }

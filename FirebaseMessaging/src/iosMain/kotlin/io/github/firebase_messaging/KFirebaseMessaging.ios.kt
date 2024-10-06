@@ -59,9 +59,14 @@ class KFirebaseMessagingImpl : KFirebaseMessaging {
         }
     }
 
-    override fun requestAuthorization() {
+    override fun requestAuthorization(callback: (Result<Boolean>) -> Unit) {
         scope.launch {
-            FCM.shared().requestAuthorization()
+            try {
+                FCM.shared().requestAuthorization()
+                callback(Result.success(true))
+            } catch (e: Exception) {
+                callback(Result.failure(Exception(e)))
+            }
         }
     }
 
@@ -82,13 +87,22 @@ class KFirebaseMessagingImpl : KFirebaseMessaging {
 
     }
 
-    override fun subscribeTopic(name: String) {
-        FCM.shared().subscribeTopicWithName(name)
+    override fun subscribeTopic(name: String, callback: (Result<Boolean>) -> Unit) {
+        try {
+            FCM.shared().subscribeTopicWithName(name)
+            callback(Result.success(true))
+        } catch (e: Exception) {
+            callback(Result.failure(Exception(e)))
+        }
     }
 
-    override fun unsubscribeTopic(name: String) {
-        FCM.shared().unsubscribeWithName(name)
-
+    override fun unsubscribeTopic(name: String, callback: (Result<Boolean>) -> Unit) {
+        try {
+            FCM.shared().unsubscribeWithName(name)
+            callback(Result.success(true))
+        } catch (e: Exception) {
+            callback(Result.failure(Exception(e)))
+        }
     }
 }
 

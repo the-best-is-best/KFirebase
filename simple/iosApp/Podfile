@@ -7,5 +7,5 @@ target 'iosApp' do
 
   # Pods for iosApp
   pod 'FirebaseCore' , '11.3.0' 
-  pod "KFirebaseMessaging" , "0.1.0-beta.6"
+  pod "KFirebaseMessaging" , "0.1.0-rc.1"
 end
