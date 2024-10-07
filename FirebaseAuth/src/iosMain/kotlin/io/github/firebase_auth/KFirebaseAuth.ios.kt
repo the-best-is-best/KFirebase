@@ -14,7 +14,7 @@ import kotlinx.cinterop.value
 import kotlinx.coroutines.CompletableDeferred
 import platform.Foundation.NSError
 import platform.Foundation.NSURL
-import cocoapods.KFirebaseAuth.KFirebaseAuth as myAuth
+import platform.posix.err
 
 @OptIn(ExperimentalForeignApi::class)
 actual class KFirebaseAuth {
@@ -66,9 +66,9 @@ actual class KFirebaseAuth {
             if (userData != null) {
                 currentUser = userData
 
-                Result.success(userData.toModel())
+               callback( Result.success(userData.toModel()))
             } else {
-                Result.success(null)
+                callback(    Result.success(null))
             }
 
         }
@@ -98,20 +98,24 @@ actual class KFirebaseAuth {
         password: String,
         callback: (Result<KFirebaseUser?>) -> Unit
     ) {
-        myAuth().email(email, password) { authResult, error: NSError? ->
-            if (error != null) {
-                println("auth error $error")
-                callback(Result.failure(error.convertNSErrorToException()))
-                return@email
-            }
-            val userData = (authResult as FIRAuthDataResult?)?.user()
-            if (userData != null) {
-                currentUser = userData
-                callback(Result.success(userData.toModel()))
-            } else {
-                callback(Result.success(null))
-            }
-        }
+
+        ios.signInWithEmail(
+            email = email,
+            password = password,
+            completion = { authResult: FIRAuthDataResult?, error: NSError? ->
+                if (error != null) {
+                    println("auth error $error")
+                    callback(Result.failure(error.convertNSErrorToException()))
+                    return@signInWithEmail
+                }
+                val userData = (authResult as FIRAuthDataResult?)?.user()
+                if (userData != null) {
+                    currentUser = userData
+                    callback(Result.success(userData.toModel()))
+                } else {
+                    callback(Result.success(null))
+                }
+            })
     }
 
     actual fun setLanguageCode(locale: String) {
@@ -161,6 +165,10 @@ actual class KFirebaseAuth {
                 callback(Result.success(user?.toModel()))
             }
         }
+    }
+
+    actual fun isLinkEmail(email: String):Boolean{
+       return ios.isSignInWithEmailLink(email)
     }
 }
 
@@ -216,6 +224,28 @@ actual fun KFirebaseUser.kResetPassword(password: String, callback: (Result<Bool
         }
     }
 }
+
+@OptIn(ExperimentalForeignApi::class)
+actual fun KFirebaseUser.linkProvider(credential: AuthCredential,callback: (Result<KFirebaseUser?>) -> Unit
+){
+    currentUser?.linkWithCredential(credential.ios){authResult , error ->
+        if(error != null){
+            callback(Result.failure(error.convertNSErrorToException()))
+            return@linkWithCredential
+        }
+        if(authResult != null) {
+            currentUser = authResult.user()
+            callback(Result.success(currentUser!!.toModel()))
+        }else{
+            callback(Result.success(null))
+        }
+
+
+    }
+}
+
+
+
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun KFirebaseUser.kDelete(callback: (Result<Boolean?>) -> Unit) {

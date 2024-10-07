@@ -149,10 +149,6 @@ kotlin {
             extraOpts += listOf("-compiler-option", "-fmodules")
 
         }
-        pod("KFirebaseAuth") {
-            version = "0.1.0-2-rc"
-            extraOpts += listOf("-compiler-option", "-fmodules")
-        }
 
 
     }

@@ -138,6 +138,10 @@ actual class KFirebaseAuth {
 
 
     }
+
+    actual fun isLinkEmail(email: String): Boolean {
+       return  android.isSignInWithEmailLink(email)
+    }
 }
 
 actual fun KFirebaseUser.kUpdateEmail(
@@ -209,4 +213,26 @@ actual fun KFirebaseUser.kSignOut(callback: (Result<Boolean?>) -> Unit) {
     FirebaseAuth.getInstance().signOut()
     currentUser = null
 
+}
+
+actual fun KFirebaseUser.linkProvider(
+    credential: AuthCredential,
+    callback: (Result<KFirebaseUser?>) -> Unit
+) {
+    currentUser?.linkWithCredential(credential.android)
+        ?.addOnCompleteListener { task->
+            if (task.isSuccessful) {
+                // Sign-in successful
+                currentUser = task.result.user
+                if(currentUser != null) {
+                    callback(Result.success(currentUser!!.toModel()))
+                }else{
+                    callback(Result.success(null))
+                }
+            } else {
+                // Sign-in failed
+                val exception = task.exception
+                callback(Result.failure(exception ?: Exception("Unknown error occurred.")))
+            }
+        }
 }

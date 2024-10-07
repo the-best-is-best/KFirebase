@@ -27,6 +27,8 @@ expect class KFirebaseAuth() {
         callback: (Result<KFirebaseUser?>) -> Unit
     )
 
+    fun isLinkEmail(email: String): Boolean
+
 }
 
 expect fun KFirebaseUser.kUpdateEmail(email: String, callback: (Result<Boolean?>) -> Unit)
@@ -34,3 +36,4 @@ expect fun KFirebaseUser.kSendEmailVerification(callback: (Result<Boolean?>) -> 
 expect fun KFirebaseUser.kResetPassword(password: String, callback: (Result<Boolean?>) -> Unit)
 expect fun KFirebaseUser.kDelete(callback: (Result<Boolean?>) -> Unit)
 expect fun KFirebaseUser.kSignOut(callback: (Result<Boolean?>) -> Unit)
+expect fun KFirebaseUser.linkProvider(credential: AuthCredential , callback: (Result<KFirebaseUser?>) -> Unit)

@@ -153,6 +153,21 @@ class KFirebaseUserState {
         }
     }
 
+    fun linkEmail(credential: AuthCredential ,callback: (Result<Boolean?>) -> Unit ){
+        user!!.linkProvider(credential){
+            it.onSuccess {
+                user = it
+                callback(Result.success(true))
+            }
+            it.onFailure {
+                callback(Result.failure(it))
+            }
+        }
+    }
+    fun isEmailLinked(email: String ): Boolean{
+       return auth.isLinkEmail(email)
+    }
+
     companion object {
         val Saver: Saver<KFirebaseUserState, *> = listSaver(
             save = { data ->

@@ -44,7 +44,7 @@ internal fun App() = AppTheme {
             ElevatedButton(
                 enabled = currentUserState.user == null,
                 onClick = {
-                    currentUserState.signInAnonymously {
+                    currentUserState.signInWithEmailAndPassword("eng.michelle.raouf@gmail.com", "Mesho@500") {
                         it.onFailure {
                             println("error auth $it")
                         }
