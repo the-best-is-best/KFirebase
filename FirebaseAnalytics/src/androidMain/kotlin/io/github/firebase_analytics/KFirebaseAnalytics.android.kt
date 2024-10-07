@@ -1,6 +1,7 @@
-package io.github.firebase_crashlytics
+package io.github.firebase_analytics
 
 import com.google.firebase.analytics.FirebaseAnalytics
+import io.github.firebase_core.AndroidKFirebaseCore
 
 actual class KFirebaseAnalytics actual constructor() {
     actual fun logEvent(

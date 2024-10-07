@@ -141,7 +141,8 @@ kotlin {
             baseName = "KFirebaseAnalytics"
         }
         noPodspec()
-        ios.deploymentTarget = "13.0"  // Update this to the required version
+        ios.deploymentTarget =
+            libs.versions.iosDeploymentTarget.get()  // Update this to the required version
 
         pod("FirebaseAnalytics") {
             version = libs.versions.podFirebase.get()

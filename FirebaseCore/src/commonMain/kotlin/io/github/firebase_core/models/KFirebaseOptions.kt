@@ -1,4 +1,4 @@
-package io.github.firebase_crashlytics.models
+package io.github.firebase_core.models
 
 data class KFirebaseAppDetails(
     val name: String?,

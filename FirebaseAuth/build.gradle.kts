@@ -42,14 +42,14 @@ tasks.withType<PublishToMavenRepository> {
 
 
 mavenPublishing {
-    coordinates("io.github.the-best-is-best", "kfirebase-crashlytics", libs.versions.me.get())
+    coordinates("io.github.the-best-is-best", "kfirebase-core", libs.versions.me.get())
 
     publishToMavenCentral(SonatypeHost.S01)
     signAllPublications()
 
     pom {
-        name.set("KFirebaseCrashlytics")
-        description.set("KFirebaseCrashlytics is a Kotlin Multiplatform Mobile (KMM) package designed to provide seamless integration with Firebase Crashlytics across both Android and iOS platforms. This package allows developers to easily track user events, monitor app performance, and gain insights into user behavior through a unified API, without duplicating code for each platform.")
+        name.set("KFirebaseAuth")
+        description.set("KFirebaseAuth is a Kotlin Multiplatform library designed to streamline the integration of Firebase services in your mobile applications. With this library, developers can effortlessly initialize Firebase for both Android and iOS, enabling a unified and efficient development experience.")
         url.set("https://github.com/the-best-is-best/KFirebase")
         licenses {
             license {
@@ -124,7 +124,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "KFirebaseCrashlytics"
+            baseName = "KFirebaseAuth"
             isStatic = true
         }
     }
@@ -135,19 +135,23 @@ kotlin {
 
         // Optional properties
         // Configure the Pod name here instead of changing the Gradle project name
-        name = "KFirebaseCrashlytics"
+        name = "KFirebaseAuth"
 
         framework {
-            baseName = "KFirebaseCrashlytics"
+            baseName = "KFirebaseAuth"
         }
         noPodspec()
         ios.deploymentTarget =
             libs.versions.iosDeploymentTarget.get()  // Update this to the required version
 
-        pod("FirebaseCrashlytics") {
+        pod("FirebaseAuth") {
             version = libs.versions.podFirebase.get()
             extraOpts += listOf("-compiler-option", "-fmodules")
 
+        }
+        pod("KFirebaseAuth") {
+            version = "0.1.0-2-rc"
+            extraOpts += listOf("-compiler-option", "-fmodules")
         }
 
 
@@ -172,10 +176,8 @@ kotlin {
             implementation(compose.uiTooling)
             implementation(libs.androidx.activityCompose)
             implementation(libs.firebase.common.ktx)
-            implementation(libs.firebase.analytics)
-            implementation(project(":FirebaseCore"))
-            implementation(libs.firebase.crashlytics)
-            implementation(libs.firebase.analytics)
+            //noinspection GradleDependency
+            implementation(libs.firebase.auth)
 
         }
 
@@ -190,7 +192,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.KFirebaseCrashlytics"
+    namespace = "io.github.KFirebaseAuth"
     compileSdk = 35
 
     defaultConfig {
@@ -213,7 +215,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "io.github.KFirebaseCrashlytics.desktopApp"
+            packageName = "io.github.KFirebaseAuth.desktopApp"
             packageVersion = "1.0.0"
         }
     }

@@ -1,9 +1,9 @@
-package io.github.firebase_crashlytics
+package io.github.firebase_core
 
 import com.google.firebase.Firebase
 import com.google.firebase.app
-import io.github.firebase_crashlytics.models.KFirebaseAppDetails
-import io.github.firebase_crashlytics.models.KFirebaseOptions
+import io.github.firebase_core.models.KFirebaseAppDetails
+import io.github.firebase_core.models.KFirebaseOptions
 
 actual object KFirebaseCore {
     actual fun app(): KFirebaseAppDetails {

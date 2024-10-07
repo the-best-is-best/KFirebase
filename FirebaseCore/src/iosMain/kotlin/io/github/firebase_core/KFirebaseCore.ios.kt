@@ -1,8 +1,8 @@
-package io.github.firebase_crashlytics
+package io.github.firebase_core
 
 import cocoapods.FirebaseCore.FIRApp
-import io.github.firebase_crashlytics.models.KFirebaseAppDetails
-import io.github.firebase_crashlytics.models.KFirebaseOptions
+import io.github.firebase_core.models.KFirebaseAppDetails
+import io.github.firebase_core.models.KFirebaseOptions
 import kotlinx.cinterop.ExperimentalForeignApi
 
 actual object KFirebaseCore {

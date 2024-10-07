@@ -1,4 +1,4 @@
-package io.github.firebase_crashlytics
+package io.github.firebase_core
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -13,7 +13,7 @@ object AndroidKFirebaseCore {
         PermissionHandler.init(context)
 
 
-        this.context = context
+        AndroidKFirebaseCore.context = context
         Firebase.initialize(context = context)
     }
 }

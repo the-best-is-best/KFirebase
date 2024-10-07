@@ -58,6 +58,7 @@ kotlin {
             implementation(project(":FirebaseCore"))
             implementation(project(":FirebaseMessaging"))
             implementation(project(":FirebaseAnalytics"))
+            implementation(project(":FirebaseAuth"))
 
         }
 

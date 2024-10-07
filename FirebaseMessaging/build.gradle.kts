@@ -141,7 +141,8 @@ kotlin {
             baseName = "KFirebaseMessaging"
         }
         noPodspec()
-        ios.deploymentTarget = "13.0"  // Update this to the required version
+        ios.deploymentTarget =
+            libs.versions.iosDeploymentTarget.get()  // Update this to the required version
 
         pod("KFirebaseMessaging") {
             version = "0.1.0-rc.1"
@@ -173,7 +174,6 @@ kotlin {
             implementation(libs.gson)
             implementation(project(":FirebaseCore"))
             //noinspection GradleDependency
-            implementation(libs.kpermissions)
             implementation(libs.firebase.analytics)
             implementation(libs.firebase.messaging.directboot)
 

@@ -1,4 +1,4 @@
-package io.github.firebase_crashlytics
+package io.github.firebase_analytics
 
 import cocoapods.FirebaseAnalytics.FIRAnalytics
 import kotlinx.cinterop.ExperimentalForeignApi

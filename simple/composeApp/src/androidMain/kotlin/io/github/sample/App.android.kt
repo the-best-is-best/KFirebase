@@ -7,7 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import io.github.firebase_crashlytics.AndroidKFirebaseCore
+import io.github.firebase_core.AndroidKFirebaseCore
 import io.github.firebase_messaging.AndroidKFirebaseMessagingChannel
 import io.github.firebase_messaging.KFirebaseMessagingImpl
 
