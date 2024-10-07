@@ -1,9 +1,9 @@
-package io.github.firebase_messaging
+package io.github.firebase_crashlytics
 
 import com.google.firebase.Firebase
 import com.google.firebase.app
-import io.github.firebase_messaging.models.KFirebaseAppDetails
-import io.github.firebase_messaging.models.KFirebaseOptions
+import io.github.firebase_crashlytics.models.KFirebaseAppDetails
+import io.github.firebase_crashlytics.models.KFirebaseOptions
 
 actual object KFirebaseCore {
     actual fun app(): KFirebaseAppDetails {

@@ -18,8 +18,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.firebase_messaging.KFirebaseAnalytics
-import io.github.firebase_messaging.KFirebaseCore
+import io.github.firebase_crashlytics.KFirebaseAnalytics
+import io.github.firebase_crashlytics.KFirebaseCore
 import io.github.firebase_messaging.KFirebaseMessaging
 import io.github.sample.theme.AppTheme
 

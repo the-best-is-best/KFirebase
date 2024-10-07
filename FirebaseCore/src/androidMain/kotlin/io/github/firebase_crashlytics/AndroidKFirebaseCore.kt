@@ -1,4 +1,4 @@
-package io.github.firebase_messaging
+package io.github.firebase_crashlytics
 
 import android.annotation.SuppressLint
 import android.app.Activity

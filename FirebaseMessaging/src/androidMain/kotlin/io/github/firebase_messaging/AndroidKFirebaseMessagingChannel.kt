@@ -16,8 +16,8 @@ class AndroidKFirebaseMessagingChannel(private val context: Activity) {
 
     // Initialize Notification Channel
     fun initChannel(id: String, name: String, icon: Int) {
-        AndroidKFirebaseMessagingChannel.icon = icon
-        AndroidKFirebaseMessagingChannel.id = id
+        Companion.icon = icon
+        Companion.id = id
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationChannel = NotificationChannel(
                 id,

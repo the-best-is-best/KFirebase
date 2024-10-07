@@ -1,5 +1,6 @@
 [versions]
 firebaseAnalytics = "22.1.2"
+firebaseCrashlytics = "19.2.0"
 firebaseMessaging = "24.0.2"
 gson = "2.11.0"
 kpermissions = "1.0.3"
@@ -20,6 +21,7 @@ androidx-testManifest = { module = "androidx.compose.ui:ui-test-manifest", versi
 androidx-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-uiTest" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics", version.ref = "firebaseAnalytics" }
 firebase-common-ktx = { group = "com.google.firebase", name = "firebase-common-ktx", version.ref = "firebaseCommonKtx" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics", version.ref = "firebaseCrashlytics" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging", version.ref = "firebaseMessaging" }
 firebase-messaging-directboot = { module = "com.google.firebase:firebase-messaging-directboot", version.ref = "firebaseMessaging" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
