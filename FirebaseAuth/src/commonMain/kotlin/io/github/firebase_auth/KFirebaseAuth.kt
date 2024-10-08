@@ -14,7 +14,13 @@ expect class KFirebaseAuth() {
         password: String,
         callback: (Result<KFirebaseUser?>) -> Unit
     )
-
+    fun addListenerAuthStateChange(callback: (Result<KFirebaseUser?>) -> Unit)
+    fun addListenerIdTokenChanged(callback: (Result<KFirebaseUser?>) -> Unit)
+    fun confirmPasswordReset(
+        code: String,
+        newPassword: String,
+        callback: (Result<Boolean?>) -> Unit
+    )
     fun setLanguageCode(locale: String)
     fun kUpdateProfile(
         displayName: String?,

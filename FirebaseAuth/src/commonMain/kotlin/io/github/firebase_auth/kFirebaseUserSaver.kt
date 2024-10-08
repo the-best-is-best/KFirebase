@@ -168,6 +168,43 @@ class KFirebaseUserState {
        return auth.isLinkEmail(email)
     }
 
+    fun confirmPasswordReset(
+        code: String,
+        newPassword: String,
+        callback: (Result<Boolean?>) -> Unit
+    ) {
+        auth.confirmPasswordReset(code, newPassword, callback)
+    }
+
+    fun addListenerAuthStateChange(callback: (Result<Boolean?>) -> Unit) {
+        auth.addListenerAuthStateChange {
+            it.onSuccess {
+                if (it != null) {
+                    user = it
+                    callback(Result.success(true))
+                } else {
+                    callback(Result.success(false))
+                }
+            }
+
+        }
+    }
+
+    fun addListenerIdTokenChanged(callback: (Result<Boolean?>) -> Unit) {
+        auth.addListenerIdTokenChanged {
+            it.onSuccess {
+                if (it != null) {
+                    user = it
+                    callback(Result.success(true))
+                } else {
+                    callback(Result.success(false))
+                }
+            }
+
+        }
+    }
+
+
     companion object {
         val Saver: Saver<KFirebaseUserState, *> = listSaver(
             save = { data ->

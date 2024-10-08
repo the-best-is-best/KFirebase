@@ -19,6 +19,7 @@ actual class KFirebaseAuth {
     }
 
     actual fun currentUser(callback: (Result<KFirebaseUser?>) -> Unit) {
+
         if (currentUser == null) {
             currentUser = android.currentUser
         }
@@ -141,6 +142,51 @@ actual class KFirebaseAuth {
 
     actual fun isLinkEmail(email: String): Boolean {
        return  android.isSignInWithEmailLink(email)
+    }
+
+    actual fun confirmPasswordReset(
+        code: String,
+        newPassword: String,
+        callback: (Result<Boolean?>) -> Unit
+    ) {
+        android.confirmPasswordReset(code, newPassword)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Sign-in successful
+
+                    callback(Result.success(task.isSuccessful))
+                } else {
+                    // Sign-in failed
+                    val exception = task.exception
+                    callback(Result.failure(exception ?: Exception("Unknown error occurred.")))
+                }
+
+            }
+    }
+
+    actual fun addListenerAuthStateChange(callback: (Result<KFirebaseUser?>) -> Unit) {
+        android.addAuthStateListener { firebaseAuth ->
+            val currentUser = firebaseAuth.currentUser
+            if (currentUser != null) {
+                callback(Result.success(currentUser.toModel()))
+            } else {
+                callback(Result.success(null))
+            }
+
+        }
+
+    }
+
+    actual fun addListenerIdTokenChanged(callback: (Result<KFirebaseUser?>) -> Unit) {
+        android.addAuthStateListener { firebaseAuth ->
+            val currentUser = firebaseAuth.currentUser
+            if (currentUser != null) {
+                callback(Result.success(currentUser.toModel()))
+            } else {
+                callback(Result.success(null))
+            }
+
+        }
     }
 }
 

@@ -14,7 +14,6 @@ import kotlinx.cinterop.value
 import kotlinx.coroutines.CompletableDeferred
 import platform.Foundation.NSError
 import platform.Foundation.NSURL
-import platform.posix.err
 
 @OptIn(ExperimentalForeignApi::class)
 actual class KFirebaseAuth {
@@ -108,7 +107,7 @@ actual class KFirebaseAuth {
                     callback(Result.failure(error.convertNSErrorToException()))
                     return@signInWithEmail
                 }
-                val userData = (authResult as FIRAuthDataResult?)?.user()
+                val userData = authResult?.user()
                 if (userData != null) {
                     currentUser = userData
                     callback(Result.success(userData.toModel()))
@@ -169,6 +168,40 @@ actual class KFirebaseAuth {
 
     actual fun isLinkEmail(email: String):Boolean{
        return ios.isSignInWithEmailLink(email)
+    }
+
+    actual fun confirmPasswordReset(
+        code: String,
+        newPassword: String,
+        callback: (Result<Boolean?>) -> Unit
+    ) {
+        ios.confirmPasswordResetWithCode(code, newPassword) { error ->
+            if (error != null) {
+                callback(Result.failure(error.convertNSErrorToException()))
+                return@confirmPasswordResetWithCode
+            }
+            callback(Result.success(true))
+        }
+    }
+
+    actual fun addListenerAuthStateChange(callback: (Result<KFirebaseUser?>) -> Unit) {
+        ios.addAuthStateDidChangeListener(listener = { _: FIRAuth?, authUser: FIRUser? ->
+            if (authUser != null) {
+                callback(Result.success(authUser.toModel()))
+                return@addAuthStateDidChangeListener
+            }
+            callback(Result.success(null))
+        })
+    }
+
+    actual fun addListenerIdTokenChanged(callback: (Result<KFirebaseUser?>) -> Unit) {
+        ios.addIDTokenDidChangeListener(listener = { _: FIRAuth?, authUser: FIRUser? ->
+            if (authUser != null) {
+                callback(Result.success(authUser.toModel()))
+                return@addIDTokenDidChangeListener
+            }
+            callback(Result.success(null))
+        })
     }
 }
 
