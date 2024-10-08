@@ -2,9 +2,11 @@ package io.github.firebase_auth
 
 import android.net.Uri
 import com.google.firebase.auth.ActionCodeEmailInfo
+import com.google.firebase.auth.ActionCodeMultiFactorInfo
 import com.google.firebase.auth.ActionCodeResult.ERROR
 import com.google.firebase.auth.ActionCodeResult.PASSWORD_RESET
 import com.google.firebase.auth.ActionCodeResult.RECOVER_EMAIL
+import com.google.firebase.auth.ActionCodeResult.REVERT_SECOND_FACTOR_ADDITION
 import com.google.firebase.auth.ActionCodeResult.SIGN_IN_WITH_EMAIL_LINK
 import com.google.firebase.auth.ActionCodeResult.VERIFY_BEFORE_CHANGE_EMAIL
 import com.google.firebase.auth.ActionCodeResult.VERIFY_EMAIL
@@ -246,9 +248,12 @@ actual class KFirebaseAuth {
                     VERIFY_BEFORE_CHANGE_EMAIL -> (result.info as ActionCodeEmailInfo).run {
                         ActionCodeResult.VerifyBeforeChangeEmail(email, previousEmail)
                     }
-//                    REVERT_SECOND_FACTOR_ADDITION -> (result.info as ActionCodeMultiFactorInfo).run {
-//                        ActionCodeResult.RevertSecondFactorAddition(email, MultiFactorInfo(multiFactorInfo))
-//                    }
+                    REVERT_SECOND_FACTOR_ADDITION -> (result.info as ActionCodeMultiFactorInfo).run {
+                        ActionCodeResult.RevertSecondFactorAddition(
+                            email,
+                            MultiFactorInfo(multiFactorInfo)
+                        )
+                    }
                     ERROR -> throw UnsupportedOperationException(result.operation.toString())
                     else -> throw UnsupportedOperationException(result.operation.toString())
                 } as T
@@ -350,4 +355,15 @@ actual fun KFirebaseUser.linkProvider(
                 callback(Result.failure(exception ?: Exception("Unknown error occurred.")))
             }
         }
+}
+
+actual class MultiFactorInfo(private val android: com.google.firebase.auth.MultiFactorInfo) {
+    actual val displayName: String?
+        get() = android.displayName
+    actual val enrollmentTime: Double?
+        get() = android.enrollmentTimestamp.toDouble()
+    actual val factorId: String
+        get() = android.factorId
+    actual val uid: String
+        get() = android.uid
 }

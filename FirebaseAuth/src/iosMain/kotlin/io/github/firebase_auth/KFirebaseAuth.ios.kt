@@ -379,3 +379,14 @@ actual fun KFirebaseUser.kSignOut(callback: (Result<Boolean?>) -> Unit) {
         }
     }
 }
+
+actual class MultiFactorInfo(private val ios: cocoapods.FirebaseAuth.FIRMultiFactorInfo) {
+    actual val displayName: String?
+        get() = ios.displayName()
+    actual val enrollmentTime: Double?
+        get() = ios.enrollmentDate().timeIntervalSinceReferenceDate
+    actual val factorId: String
+        get() = ios.factorID()
+    actual val uid: String
+        get() = ios.UID()
+}

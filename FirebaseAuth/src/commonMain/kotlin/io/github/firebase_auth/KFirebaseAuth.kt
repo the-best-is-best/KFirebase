@@ -59,5 +59,15 @@ sealed class ActionCodeResult {
         val email: String,
         val previousEmail: String
     ) : ActionCodeResult()
-    //  class RevertSecondFactorAddition internal constructor(val email: String, val multiFactorInfo: MultiFactorInfo?) : ActionCodeResult()
+    class RevertSecondFactorAddition internal constructor(
+        val email: String,
+        val multiFactorInfo: MultiFactorInfo?
+    ) : ActionCodeResult()
+}
+
+expect class MultiFactorInfo {
+    val displayName: String?
+    val enrollmentTime: Double?
+    val factorId: String
+    val uid: String
 }
