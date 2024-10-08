@@ -15,15 +15,19 @@ class AndroidKFirebaseMessagingChannel(private val context: Activity) {
     }
 
     // Initialize Notification Channel
-    fun initChannel(id: String, name: String, icon: Int) {
+    fun initChannel(id: String, name: String, icon: Int, channelDesc: String? = null) {
         Companion.icon = icon
         Companion.id = id
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationChannel = NotificationChannel(
                 id,
                 name,
-                NotificationManager.IMPORTANCE_HIGH
-            )
+                NotificationManager.IMPORTANCE_HIGH,
+            ).apply {
+                description = channelDesc ?: "Default channel description"
+            }
+
+
 
             val notificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

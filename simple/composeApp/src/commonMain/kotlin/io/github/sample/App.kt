@@ -11,18 +11,46 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.firebase_auth.rememberKFirebaseUserStates
 import io.github.firebase_core.KFirebaseCore
+import io.github.firebase_messaging.KFirebaseMessaging
 import io.github.sample.theme.AppTheme
 
 @Composable
 internal fun App() = AppTheme {
+    val fcm = KFirebaseMessaging.create()
+    var notificationValue by remember { mutableStateOf("") }
     val app = KFirebaseCore.app()
     println(app.options) // Check this log
-    val currentUserState = rememberKFirebaseUserStates()
+
+    // Log when setting listeners
+    fcm.setNotificationClickedListener { it ->
+        it.onSuccess { data ->
+            println("Notification clicked data: $data")
+            notificationValue = "Notification clicked data: ${data?.get("token").toString()}"
+        }
+    }
+
+    fcm.setNotificationListener { it ->
+        it.onSuccess { data ->
+            println("Notification received data: $data")
+            notificationValue = "Notification received data: ${data?.get("token").toString()}"
+        }
+    }
+
+    fcm.setTokenListener { it ->
+        it.onSuccess { token ->
+            println("User token: $token")
+        }
+    }
+
+
 
 
     LazyColumn(
@@ -33,89 +61,64 @@ internal fun App() = AppTheme {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
-            Text("User id ${currentUserState.user?.uid}")
-            Spacer(Modifier.height(10.dp))
-            Text("display name ${currentUserState.user?.displayName}")
-            Spacer(Modifier.height(10.dp))
-            Text("emil ${currentUserState.user?.email}")
+            ElevatedButton(onClick = {
+                fcm.requestAuthorization(callback = {
+                    println("per state $it")
+                })
+            }) {
+                Text("Request permissions")
+            }
+            Spacer(Modifier.height(30.dp))
+            ElevatedButton(onClick = {
+                fcm.getToken {
+                    it.onSuccess {
+                        println("token $it")
+                    }
+                    it.onFailure {
+                        println("error token $it")
+                    }
+                }
+            }) {
+                Text("Get token")
+            }
+            Spacer(Modifier.height(30.dp))
+            ElevatedButton(onClick = {
+                fcm.subscribeTopic("topic_test", callback = {
+                    it.onSuccess {
+                        println("sub to topic correctly")
+                    }
+                    it.onFailure {
+                        println("sub to topic ${it.message}")
+                    }
+                })
+            }) {
+                Text("subscribe topic")
+            }
 
             Spacer(Modifier.height(30.dp))
+            ElevatedButton(onClick = {
+                fcm.unsubscribeTopic("topic_test", callback = {
+                    it.onSuccess {
+                        println("un sub to topic correctly")
+                    }
+                    it.onFailure {
+                        println("un sub to topic ${it.message}")
+                    }
+                })
+            }) {
+                Text("un subscribe topic")
+            }
+            Spacer(Modifier.height(30.dp))
 
-            ElevatedButton(
-                enabled = currentUserState.user == null,
-                onClick = {
-                    currentUserState.signInWithEmailAndPassword("eng.michelle.raouf@gmail.com", "Mesho@500") {
-                        it.onFailure {
-                            println("error auth $it")
-                        }
-                    }
-                }) {
-                Text("Login with email and password")
-            }
-            Spacer(Modifier.height(20.dp))
+            Text(notificationValue)
 
-            ElevatedButton(
-                enabled = currentUserState.user == null,
-                onClick = {
-                    currentUserState.getCurrentUser {
-
-                        it.onFailure {
-                            println("error auth $it")
-                        }
-                    }
-                }) {
-                Text("get user data")
-            }
-            Spacer(Modifier.height(20.dp))
-            ElevatedButton(
-                enabled = currentUserState.user != null,
-                onClick = {
-                    currentUserState.updateProfile("Michelle", null) {
-                        it.onFailure {
-                            println("error update profile $it")
-                        }
-                    }
-                }) {
-                Text("Update profile")
-            }
-            Spacer(Modifier.height(20.dp))
-            ElevatedButton(
-                enabled = currentUserState.user != null,
-                onClick = {
-                    currentUserState.updateEmail("meshoraouf515@gamil.com") {
-                        it.onFailure {
-                            println("update email error $it")
-                        }
-                    }
-                }) {
-                Text("Update Email")
-            }
-            Spacer(Modifier.height(20.dp))
-            ElevatedButton(
-                enabled = currentUserState.user != null,
-                onClick = {
-                    currentUserState.delete {
-                        it.onFailure {
-                            println("delete user $it")
-                        }
-                    }
-                }) {
-                Text("delete user")
-            }
-            Spacer(Modifier.height(20.dp))
-            ElevatedButton(
-                enabled = currentUserState.user != null,
-                onClick = {
-                    currentUserState.signOut {
-                        it.onFailure {
-                            println("logout user $it")
-                        }
-                    }
-                }) {
-                Text("logout user")
+            Spacer(Modifier.height(30.dp))
+            ElevatedButton(onClick = {
+                io.github.firebase_analytics.KFirebaseAnalytics()
+                    .logEvent("haha", mapOf("test1" to 1, "test2" to 2))
+            }) {
+                Text("Sent analytics")
             }
         }
-
-
     }
 }
