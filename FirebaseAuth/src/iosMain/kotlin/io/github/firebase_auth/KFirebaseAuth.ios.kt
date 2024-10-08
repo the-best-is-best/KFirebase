@@ -121,7 +121,7 @@ actual class KFirebaseAuth {
             })
     }
 
-    actual fun setLanguageCode(locale: String) {
+    actual fun setLanguageCodeLocale(locale: String) {
         ios.setLanguageCode(locale)
     }
 
@@ -211,7 +211,7 @@ actual class KFirebaseAuth {
     actual var languageCode: String?
         get() = ios.languageCode()
         set(value) {
-            setLanguageCode(value!!)
+            setLanguageCodeLocale(value!!)
         }
 
     actual fun applyActionWithCode(

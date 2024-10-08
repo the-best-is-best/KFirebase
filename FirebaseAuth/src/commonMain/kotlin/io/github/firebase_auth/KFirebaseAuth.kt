@@ -19,9 +19,9 @@ expect class KFirebaseAuth() {
     fun confirmPasswordReset(
         code: String,
         newPassword: String,
-        callback: (Result<Boolean?>) -> Unit
+        callback: (Result<Boolean?>) -> Unit,
     )
-    fun setLanguageCode(locale: String)
+    fun setLanguageCodeLocale(locale: String)
     fun kUpdateProfile(
         displayName: String?,
         photoUrl: String?,

@@ -77,20 +77,25 @@ actual class KFirebaseAuth {
     ) {
         android.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    // Sign-in successful
-                    currentUser = task.result.user
-                    val userData = task.result?.user?.toModel() // Ensure task.result is not null
-                    callback(Result.success(userData))
+                if (android.currentUser != null) {
+                    if (task.isSuccessful) {
+                        // Sign-in successful
+                        currentUser = task.result.user
+                        val userData =
+                            task.result?.user?.toModel() // Ensure task.result is not null
+                        callback(Result.success(userData))
+                    } else {
+                        // Sign-in failed
+                        val exception = task.exception
+                        callback(Result.failure(exception ?: Exception("Unknown error occurred.")))
+                    }
                 } else {
-                    // Sign-in failed
-                    val exception = task.exception
-                    callback(Result.failure(exception ?: Exception("Unknown error occurred.")))
+                    callback(Result.success(currentUser!!.toModel()))
                 }
             }
     }
 
-    actual fun setLanguageCode(locale: String) {
+    actual fun setLanguageCodeLocale(locale: String) {
         android.setLanguageCode(locale)
     }
 
@@ -199,7 +204,7 @@ actual class KFirebaseAuth {
     actual var languageCode: String?
         get() = android.languageCode
         set(value) {
-            setLanguageCode(value!!)
+            setLanguageCodeLocale(value!!)
         }
 
     actual fun applyActionWithCode(
@@ -321,6 +326,7 @@ actual fun KFirebaseUser.kDelete(callback: (Result<Boolean?>) -> Unit) {
 actual fun KFirebaseUser.kSignOut(callback: (Result<Boolean?>) -> Unit) {
     FirebaseAuth.getInstance().signOut()
     currentUser = null
+    callback(Result.success(null))
 
 }
 

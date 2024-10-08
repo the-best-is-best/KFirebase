@@ -71,8 +71,8 @@ class KFirebaseUserState {
         }
     }
 
-    fun setLanguageCode(locale: String) {
-        auth.setLanguageCode(locale)
+    fun setLanguageCodeLocale(locale: String) {
+        auth.setLanguageCodeLocale(locale)
     }
 
     fun updateProfile(
