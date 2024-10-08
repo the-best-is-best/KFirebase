@@ -1,11 +1,10 @@
 package io.github.firebase_crashlytics
 
 import cocoapods.FirebaseCrashlytics.FIRCrashlytics
-import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSError
 import platform.Foundation.NSLocalizedDescriptionKey
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual class KFirebaseCrashlytics {
 
 

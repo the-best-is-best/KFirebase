@@ -16,6 +16,8 @@ google-services = "4.4.2"
 firebaseCommonKtx = "21.0.0"
 firebaseAuth = "23.0.0"
 iosDeploymentTarget = "13.0"
+settings-api = "2.0"
+settings-language = "2.0"
 [libraries]
 
 androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }

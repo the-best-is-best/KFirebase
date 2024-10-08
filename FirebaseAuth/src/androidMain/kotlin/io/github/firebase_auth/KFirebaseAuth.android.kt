@@ -1,6 +1,13 @@
 package io.github.firebase_auth
 
 import android.net.Uri
+import com.google.firebase.auth.ActionCodeEmailInfo
+import com.google.firebase.auth.ActionCodeResult.ERROR
+import com.google.firebase.auth.ActionCodeResult.PASSWORD_RESET
+import com.google.firebase.auth.ActionCodeResult.RECOVER_EMAIL
+import com.google.firebase.auth.ActionCodeResult.SIGN_IN_WITH_EMAIL_LINK
+import com.google.firebase.auth.ActionCodeResult.VERIFY_BEFORE_CHANGE_EMAIL
+import com.google.firebase.auth.ActionCodeResult.VERIFY_EMAIL
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
@@ -187,6 +194,62 @@ actual class KFirebaseAuth {
             }
 
         }
+    }
+
+    actual var languageCode: String?
+        get() = android.languageCode
+        set(value) {
+            setLanguageCode(value!!)
+        }
+
+    actual fun applyActionWithCode(
+        code: String,
+        callback: (Result<Boolean?>) -> Unit
+    ) {
+        android.applyActionCode(code)
+            .addOnCompleteListener { task ->
+                if (task.exception != null) {
+                    callback(Result.success(task.isSuccessful))
+                } else {
+                    callback(Result.failure(Exception(task.exception)))
+                }
+
+            }
+    }
+
+    actual fun <T : ActionCodeResult> checkActionWithCode(
+        code: String,
+        callback: (Result<T>) -> Unit
+    ) {
+        android.checkActionCode(code)
+            .addOnCompleteListener { task ->
+                if (task.exception != null) {
+                    callback(Result.failure(Exception(task.exception)))
+                    return@addOnCompleteListener
+                }
+                val result = task.result
+                val operation = task.result.operation
+
+                val resOperation = when (operation) {
+                    SIGN_IN_WITH_EMAIL_LINK -> ActionCodeResult.SignInWithEmailLink
+                    VERIFY_EMAIL -> ActionCodeResult.VerifyEmail(result.info!!.email)
+                    PASSWORD_RESET -> ActionCodeResult.PasswordReset(result.info!!.email)
+                    RECOVER_EMAIL -> (result.info as ActionCodeEmailInfo).run {
+                        ActionCodeResult.RecoverEmail(email, previousEmail)
+                    }
+
+                    VERIFY_BEFORE_CHANGE_EMAIL -> (result.info as ActionCodeEmailInfo).run {
+                        ActionCodeResult.VerifyBeforeChangeEmail(email, previousEmail)
+                    }
+//                    REVERT_SECOND_FACTOR_ADDITION -> (result.info as ActionCodeMultiFactorInfo).run {
+//                        ActionCodeResult.RevertSecondFactorAddition(email, MultiFactorInfo(multiFactorInfo))
+//                    }
+                    ERROR -> throw UnsupportedOperationException(result.operation.toString())
+                    else -> throw UnsupportedOperationException(result.operation.toString())
+                } as T
+
+                callback(Result.success(resOperation))
+            }
     }
 }
 

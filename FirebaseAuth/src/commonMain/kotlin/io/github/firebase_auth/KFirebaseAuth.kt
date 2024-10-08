@@ -34,7 +34,10 @@ expect class KFirebaseAuth() {
     )
 
     fun isLinkEmail(email: String): Boolean
+    var languageCode: String?
 
+    fun applyActionWithCode(code: String, callback: (Result<Boolean?>) -> Unit)
+    fun <T : ActionCodeResult> checkActionWithCode(code: String, callback: (Result<T>) -> Unit)
 }
 
 expect fun KFirebaseUser.kUpdateEmail(email: String, callback: (Result<Boolean?>) -> Unit)
@@ -43,3 +46,18 @@ expect fun KFirebaseUser.kResetPassword(password: String, callback: (Result<Bool
 expect fun KFirebaseUser.kDelete(callback: (Result<Boolean?>) -> Unit)
 expect fun KFirebaseUser.kSignOut(callback: (Result<Boolean?>) -> Unit)
 expect fun KFirebaseUser.linkProvider(credential: AuthCredential , callback: (Result<KFirebaseUser?>) -> Unit)
+
+
+sealed class ActionCodeResult {
+    data object SignInWithEmailLink : ActionCodeResult()
+    class PasswordReset internal constructor(val email: String) : ActionCodeResult()
+    class VerifyEmail internal constructor(val email: String) : ActionCodeResult()
+    class RecoverEmail internal constructor(val email: String, val previousEmail: String) :
+        ActionCodeResult()
+
+    class VerifyBeforeChangeEmail internal constructor(
+        val email: String,
+        val previousEmail: String
+    ) : ActionCodeResult()
+    //  class RevertSecondFactorAddition internal constructor(val email: String, val multiFactorInfo: MultiFactorInfo?) : ActionCodeResult()
+}

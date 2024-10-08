@@ -2,11 +2,10 @@ package io.github.firebase_auth
 
 import cocoapods.FirebaseAuth.FIRUser
 import cocoapods.FirebaseAuth.FIRUserMetadata
-import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSDate
 import platform.Foundation.NSError
 
-@OptIn(ExperimentalForeignApi::class)
+
 fun FIRUserMetadata.toModel(): KFirebaseUserMetaData = KFirebaseUserMetaData(
     creationTime = this.creationDate()?.convertNSDateToDouble(),
     lastSignInTime = this.lastSignInDate()?.convertNSDateToDouble()
@@ -18,7 +17,6 @@ fun NSDate.convertNSDateToDouble(): Double {
 }
 
 
-@OptIn(ExperimentalForeignApi::class)
 fun FIRUser.toModel(): KFirebaseUser {
     return KFirebaseUser(
         uid = this.uid(),

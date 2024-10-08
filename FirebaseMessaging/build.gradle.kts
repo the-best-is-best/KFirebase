@@ -152,6 +152,18 @@ kotlin {
     }
 
     sourceSets {
+        all {
+            languageSettings.apply {
+                this.apiVersion = libs.versions.settings.api.get()
+                this.languageVersion = libs.versions.settings.language.get()
+                progressiveMode = true
+                optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+                if (name.lowercase().contains("ios")) {
+                    optIn("kotlinx.cinterop.ExperimentalForeignApi")
+                    optIn("kotlinx.cinterop.BetaInteropApi")
+                }
+            }
+        }
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -172,6 +184,7 @@ kotlin {
             implementation(libs.firebase.common.ktx)
             implementation(libs.firebase.messaging)
             implementation(libs.gson)
+            implementation(libs.kpermissions)
             implementation(project(":FirebaseCore"))
             //noinspection GradleDependency
             implementation(libs.firebase.analytics)

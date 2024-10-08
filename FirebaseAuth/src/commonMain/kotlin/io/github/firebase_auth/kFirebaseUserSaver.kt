@@ -204,6 +204,15 @@ class KFirebaseUserState {
         }
     }
 
+    var languageCode: String? = auth.languageCode
+
+    fun applyActionCode(code: String, callback: (Result<Boolean?>) -> Unit) {
+        auth.applyActionWithCode(code, callback)
+    }
+
+    fun <T : ActionCodeResult> checkActionWithCode(code: String, callback: (Result<T>) -> Unit) {
+        auth.checkActionWithCode<T>(code, callback)
+    }
 
     companion object {
         val Saver: Saver<KFirebaseUserState, *> = listSaver(

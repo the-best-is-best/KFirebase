@@ -1,5 +1,10 @@
 package io.github.firebase_auth
 
+import cocoapods.FirebaseAuth.FIRActionCodeOperationEmailLink
+import cocoapods.FirebaseAuth.FIRActionCodeOperationRecoverEmail
+import cocoapods.FirebaseAuth.FIRActionCodeOperationUnknown
+import cocoapods.FirebaseAuth.FIRActionCodeOperationVerifyAndChangeEmail
+import cocoapods.FirebaseAuth.FIRActionCodeOperationVerifyEmail
 import cocoapods.FirebaseAuth.FIRAuth
 import cocoapods.FirebaseAuth.FIRAuthDataResult
 import cocoapods.FirebaseAuth.FIRUser
@@ -15,7 +20,6 @@ import kotlinx.coroutines.CompletableDeferred
 import platform.Foundation.NSError
 import platform.Foundation.NSURL
 
-@OptIn(ExperimentalForeignApi::class)
 actual class KFirebaseAuth {
     companion object {
         internal var currentUser: FIRUser? = null
@@ -203,6 +207,66 @@ actual class KFirebaseAuth {
             callback(Result.success(null))
         })
     }
+
+    actual var languageCode: String?
+        get() = ios.languageCode()
+        set(value) {
+            setLanguageCode(value!!)
+        }
+
+    actual fun applyActionWithCode(
+        code: String,
+        callback: (Result<Boolean?>) -> Unit
+    ) {
+        ios.applyActionCode(code) { error ->
+            if (error != null) {
+                callback(Result.failure(error.convertNSErrorToException()))
+                return@applyActionCode
+            }
+            callback(Result.success(true))
+
+        }
+    }
+
+    actual fun <T : ActionCodeResult> checkActionWithCode(
+        code: String,
+        callback: (Result<T>) -> Unit
+    ) {
+        ios.checkActionCode(code, { result, error ->
+            if (error != null) {
+                callback(Result.failure(error.convertNSErrorToException()))
+                return@checkActionCode
+            }
+            if (result == null) {
+                callback(Result.failure(Exception("operation is null")))
+                return@checkActionCode
+            }
+            val resOptions = when (result.operation()) {
+                FIRActionCodeOperationEmailLink -> ActionCodeResult.SignInWithEmailLink
+                FIRActionCodeOperationVerifyEmail -> ActionCodeResult.VerifyEmail(result.email())
+                FIRActionCodeOperationRecoverEmail -> ActionCodeResult.RecoverEmail(
+                    result.email(),
+                    result.previousEmail()!!
+                )
+
+                FIRActionCodeOperationVerifyAndChangeEmail -> ActionCodeResult.VerifyBeforeChangeEmail(
+                    result.email(),
+                    result.previousEmail()!!
+                )
+                // FIRActionCodeOperationRevertSecondFactorAddition ->ActionCodeResult.RevertSecondFactorAddition(result.email(), null)
+                FIRActionCodeOperationUnknown -> throw UnsupportedOperationException(
+                    result.operation().toString()
+                )
+
+                else -> throw UnsupportedOperationException(result.operation().toString())
+            } as T
+
+            callback(Result.success(resOptions))
+
+        })
+
+
+    }
 }
 
 internal suspend inline fun <T, reified R> T.awaitResult(function: T.(callback: (R?, NSError?) -> Unit) -> Unit): R {
@@ -218,7 +282,6 @@ internal suspend inline fun <T, reified R> T.awaitResult(function: T.(callback: 
 }
 
 
-@OptIn(ExperimentalForeignApi::class)
 actual fun KFirebaseUser.kUpdateEmail(email: String, callback: (Result<Boolean?>) -> Unit) {
     currentUser?.updateEmail(email) { error ->
         try {
@@ -235,13 +298,13 @@ actual fun KFirebaseUser.kUpdateEmail(email: String, callback: (Result<Boolean?>
     }
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual fun KFirebaseUser.kSendEmailVerification(callback: (Result<Boolean?>) -> Unit) {
     val sent = currentUser?.emailVerified()
     callback(Result.success(sent))
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual fun KFirebaseUser.kResetPassword(password: String, callback: (Result<Boolean?>) -> Unit) {
     currentUser?.updatePassword(password) { error ->
         try {
@@ -258,7 +321,7 @@ actual fun KFirebaseUser.kResetPassword(password: String, callback: (Result<Bool
     }
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual fun KFirebaseUser.linkProvider(credential: AuthCredential,callback: (Result<KFirebaseUser?>) -> Unit
 ){
     currentUser?.linkWithCredential(credential.ios){authResult , error ->
@@ -278,9 +341,6 @@ actual fun KFirebaseUser.linkProvider(credential: AuthCredential,callback: (Resu
 }
 
 
-
-
-@OptIn(ExperimentalForeignApi::class)
 actual fun KFirebaseUser.kDelete(callback: (Result<Boolean?>) -> Unit) {
 
     currentUser?.deleteWithCompletion { error ->

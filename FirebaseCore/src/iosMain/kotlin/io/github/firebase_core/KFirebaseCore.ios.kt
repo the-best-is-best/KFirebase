@@ -3,10 +3,9 @@ package io.github.firebase_core
 import cocoapods.FirebaseCore.FIRApp
 import io.github.firebase_core.models.KFirebaseAppDetails
 import io.github.firebase_core.models.KFirebaseOptions
-import kotlinx.cinterop.ExperimentalForeignApi
 
 actual object KFirebaseCore {
-    @OptIn(ExperimentalForeignApi::class)
+
     actual fun app(): KFirebaseAppDetails {
         val appDetails = FIRApp.defaultApp()
 

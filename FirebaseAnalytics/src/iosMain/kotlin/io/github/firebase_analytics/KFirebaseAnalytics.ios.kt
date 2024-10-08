@@ -1,11 +1,10 @@
 package io.github.firebase_analytics
 
 import cocoapods.FirebaseAnalytics.FIRAnalytics
-import kotlinx.cinterop.ExperimentalForeignApi
 
 
 actual class KFirebaseAnalytics actual constructor() {
-    @OptIn(ExperimentalForeignApi::class)
+
     actual fun logEvent(
         eventName: String,
         params: Map<String, Any>

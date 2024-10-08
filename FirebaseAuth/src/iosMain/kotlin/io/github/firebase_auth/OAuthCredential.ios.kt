@@ -13,28 +13,28 @@ import cocoapods.FirebaseAuth.FIRPhoneAuthProvider
 import cocoapods.FirebaseAuth.FIRTwitterAuthProvider
 import kotlinx.cinterop.ExperimentalForeignApi
 
-actual open class AuthCredential @OptIn(ExperimentalForeignApi::class) constructor(open val ios: FIRAuthCredential) {
-    @OptIn(ExperimentalForeignApi::class)
+actual open class AuthCredential(open val ios: FIRAuthCredential) {
+    
     actual val providerId: String
         get() = ios.provider()
 }
 
-@OptIn(ExperimentalForeignApi::class)
-actual class PhoneAuthCredential @OptIn(ExperimentalForeignApi::class) constructor(override val ios: FIRPhoneAuthCredential) :
+
+actual class PhoneAuthCredential(override val ios: FIRPhoneAuthCredential) :
     AuthCredential(ios)
 
 @ExperimentalForeignApi
 actual class OAuthCredential(override val ios: FIROAuthCredential) : AuthCredential(ios)
 
 actual object EmailAuthProvider {
-    @OptIn(ExperimentalForeignApi::class)
+
     actual fun credential(
         email: String,
         password: String,
     ): AuthCredential =
         AuthCredential(FIREmailAuthProvider.credentialWithEmail(email = email, password = password))
 
-    @OptIn(ExperimentalForeignApi::class)
+
     actual fun credentialWithLink(
         email: String,
         emailLink: String,
@@ -43,21 +43,21 @@ actual object EmailAuthProvider {
 }
 
 actual object FacebookAuthProvider {
-    @OptIn(ExperimentalForeignApi::class)
+
     actual fun credential(accessToken: String): AuthCredential = AuthCredential(
         FIRFacebookAuthProvider.credentialWithAccessToken(accessToken)
     )
 }
 
 actual object GithubAuthProvider {
-    @OptIn(ExperimentalForeignApi::class)
+
     actual fun credential(token: String): AuthCredential = AuthCredential(
         FIRGitHubAuthProvider.credentialWithToken(token)
     )
 }
 
 actual object GoogleAuthProvider {
-    @OptIn(ExperimentalForeignApi::class)
+
     actual fun credential(idToken: String?, accessToken: String?): AuthCredential {
         requireNotNull(idToken) { "idToken must not be null" }
         requireNotNull(accessToken) { "accessToken must not be null" }
@@ -65,12 +65,12 @@ actual object GoogleAuthProvider {
     }
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 val OAuthProvider.ios: FIROAuthProvider get() = ios
 
-actual class OAuthProvider @OptIn(ExperimentalForeignApi::class) constructor(internal val ios: FIROAuthProvider) {
+actual class OAuthProvider(internal val ios: FIROAuthProvider) {
 
-    @OptIn(ExperimentalForeignApi::class)
+
     actual constructor(
         provider: String,
         scopes: List<String>,
@@ -83,7 +83,7 @@ actual class OAuthProvider @OptIn(ExperimentalForeignApi::class) constructor(int
     }
 
     actual companion object {
-        @OptIn(ExperimentalForeignApi::class)
+
         actual fun credential(
             providerId: String,
             accessToken: String?,
@@ -120,19 +120,19 @@ actual class OAuthProvider @OptIn(ExperimentalForeignApi::class) constructor(int
     }
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 val PhoneAuthProvider.ios: FIRPhoneAuthProvider get() = ios
 
-actual class PhoneAuthProvider @OptIn(ExperimentalForeignApi::class) constructor(internal val ios: FIRPhoneAuthProvider) {
+actual class PhoneAuthProvider(internal val ios: FIRPhoneAuthProvider) {
 
-    @OptIn(ExperimentalForeignApi::class)
+
     actual constructor(auth: KFirebaseAuth) : this(FIRPhoneAuthProvider.providerWithAuth(auth.ios))
 
-    @OptIn(ExperimentalForeignApi::class)
+
     actual fun credential(verificationId: String, smsCode: String): PhoneAuthCredential =
         PhoneAuthCredential(ios.credentialWithVerificationID(verificationId, smsCode))
 
-    @OptIn(ExperimentalForeignApi::class)
+
     actual suspend fun verifyPhoneNumber(
         phoneNumber: String,
         verificationProvider: PhoneVerificationProvider
@@ -150,13 +150,13 @@ actual class PhoneAuthProvider @OptIn(ExperimentalForeignApi::class) constructor
 }
 
 actual interface PhoneVerificationProvider {
-    @OptIn(ExperimentalForeignApi::class)
+
     val delegate: FIRAuthUIDelegateProtocol?
     suspend fun getVerificationCode(): String
 }
 
 actual object TwitterAuthProvider {
-    @OptIn(ExperimentalForeignApi::class)
+
     actual fun credential(token: String, secret: String): AuthCredential = AuthCredential(
         FIRTwitterAuthProvider.credentialWithToken(token, secret)
     )
