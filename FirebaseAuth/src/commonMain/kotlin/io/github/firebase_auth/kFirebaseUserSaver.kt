@@ -12,7 +12,11 @@ class KFirebaseUserState {
     var user by mutableStateOf<KFirebaseUser?>(null)
         private set
     private val auth = KFirebaseAuth()
-
+init {
+     getCurrentUser {
+         
+     }
+}
     fun getCurrentUser(callback: (Result<Boolean?>) -> Unit) {
         auth.currentUser { it ->
             it.onSuccess {
