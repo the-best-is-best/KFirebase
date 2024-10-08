@@ -11,6 +11,7 @@ import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
+import kotlinx.coroutines.CompletableDeferred
 import platform.Foundation.NSError
 import platform.Foundation.NSURL
 
@@ -202,6 +203,18 @@ actual class KFirebaseAuth {
             callback(Result.success(null))
         })
     }
+}
+
+internal suspend inline fun <T, reified R> T.awaitResult(function: T.(callback: (R?, NSError?) -> Unit) -> Unit): R {
+    val job = CompletableDeferred<R?>()
+    function { result, error ->
+        if (error == null) {
+            job.complete(result)
+        } else {
+            job.completeExceptionally(error.convertNSErrorToException())
+        }
+    }
+    return job.await() as R
 }
 
 
