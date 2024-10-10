@@ -12,6 +12,7 @@ data class KFirebaseUser(
 
     )
 
+
 data class KFirebaseUserMetaData(
     val creationTime: Double?,
     val lastSignInTime: Double?

@@ -218,6 +218,7 @@ init {
         auth.checkActionWithCode<T>(code, callback)
     }
 
+
     companion object {
         val Saver: Saver<KFirebaseUserState, *> = listSaver(
             save = { data ->

@@ -11,6 +11,8 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.plugin.serialization)
+
 }
 
 kotlin {
@@ -59,6 +61,9 @@ kotlin {
             implementation(project(":FirebaseMessaging"))
             implementation(project(":FirebaseAnalytics"))
             implementation(project(":FirebaseAuth"))
+            implementation(project(":FirebaseFirestore"))
+
+            implementation(libs.kotlinx.serialization.json)
 
         }
 

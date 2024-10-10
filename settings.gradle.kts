@@ -35,5 +35,5 @@ include(":FirebaseMessaging")
 include(":FirebaseAnalytics")
 include(":FirebaseCrashlytics")
 include(":FirebaseAuth")
+include(":FirebaseFirestore")
 include(":simple:composeApp")
-

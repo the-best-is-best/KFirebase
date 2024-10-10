@@ -183,6 +183,8 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.uiTooling)
             implementation(libs.androidx.activityCompose)
+
+            implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(libs.firebase.common.ktx)
             implementation(libs.firebase.analytics)
             implementation(project(":FirebaseCore"))

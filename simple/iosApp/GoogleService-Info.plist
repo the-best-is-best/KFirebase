@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyCTgFF2P11zCQrfwKHePV13lVgTpWskyAA</string>
+	<string>AIzaSyDfmjElDtHdTm2tTG9UkLxxhaNQLat757Q</string>
 	<key>GCM_SENDER_ID</key>
-	<string>780339269907</string>
+	<string>608756724133</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.linkie.tech.cody</string>
 	<key>PROJECT_ID</key>
-	<string>cody-70390</string>
+	<string>devcody-2684e</string>
 	<key>STORAGE_BUCKET</key>
-	<string>cody-70390.appspot.com</string>
+	<string>devcody-2684e.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:780339269907:ios:1b40c6edcb40ecfdab4ae6</string>
+	<string>1:608756724133:ios:1384bae16deb1abf3bf84c</string>
 </dict>
 </plist>

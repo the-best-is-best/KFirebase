@@ -42,7 +42,7 @@ tasks.withType<PublishToMavenRepository> {
 
 
 mavenPublishing {
-    coordinates("io.github.the-best-is-best", "kfirebase-core", libs.versions.me.get())
+    coordinates("io.github.the-best-is-best", "kfirebase-auth", libs.versions.me.get())
 
     publishToMavenCentral(SonatypeHost.S01)
     signAllPublications()
@@ -172,6 +172,7 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+
         }
 
         commonTest.dependencies {
@@ -185,6 +186,8 @@ kotlin {
             implementation(libs.androidx.activityCompose)
             implementation(libs.firebase.common.ktx)
             //noinspection GradleDependency
+            implementation(project.dependencies.platform(libs.firebase.bom))
+
             implementation(libs.firebase.auth)
 
         }

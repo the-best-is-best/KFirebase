@@ -12,7 +12,7 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.android.library)
     alias(libs.plugins.native.cocoapods)
-
+    alias(libs.plugins.plugin.serialization)
     id("maven-publish")
     id("signing")
     alias(libs.plugins.maven.publish)
@@ -42,14 +42,14 @@ tasks.withType<PublishToMavenRepository> {
 
 
 mavenPublishing {
-    coordinates("io.github.the-best-is-best", "kfirebase-messaging", libs.versions.me.get())
+    coordinates("io.github.the-best-is-best", "kfirebase-firestore", libs.versions.me.get())
 
     publishToMavenCentral(SonatypeHost.S01)
     signAllPublications()
 
     pom {
-        name.set("KFirebaseMessaging")
-        description.set("KFirebaseMessaging is a Kotlin Multiplatform Mobile (KMM) package that simplifies the integration of Firebase Cloud Messaging (FCM) across Android and iOS platforms. It provides a unified API for handling push notifications and FCM messaging in a shared codebase, allowing developers to seamlessly implement FCM functionality for both platforms without duplicating code.")
+        name.set("KFirebaseFirestore")
+        description.set("KFirebaseCore is a Kotlin Multiplatform library designed to streamline the integration of Firebase services in your mobile applications. With this library, developers can effortlessly initialize Firebase for both Android and iOS, enabling a unified and efficient development experience.")
         url.set("https://github.com/the-best-is-best/KFirebase")
         licenses {
             license {
@@ -124,7 +124,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "KFirebaseMessaging"
+            baseName = "KFirebaseCore"
             isStatic = true
         }
     }
@@ -135,20 +135,32 @@ kotlin {
 
         // Optional properties
         // Configure the Pod name here instead of changing the Gradle project name
-        name = "KFirebaseMessaging"
+        name = "KFirebaseCore"
 
         framework {
-            baseName = "KFirebaseMessaging"
+            baseName = "KFirebaseFirestore"
         }
         noPodspec()
         ios.deploymentTarget =
             libs.versions.iosDeploymentTarget.get()  // Update this to the required version
 
-        pod("KFirebaseMessaging") {
-            version = "0.1.0-rc.1"
-            extraOpts += listOf("-compiler-option", "-fmodules")
+//        pod("FirebaseFirestoreInternal") {
+//            version = libs.versions.podFirebase.get()
+//            extraOpts += listOf("-compiler-option", "-fmodules")
+//        }
+//        pod("FirebaseFirestore") {
+//            version = libs.versions.podFirebase.get()
+//            extraOpts += listOf("-compiler-option", "-fmodules")
+//            useInteropBindingFrom("FirebaseFirestoreInternal")
+//
+//        }
 
+        pod("kfirebaseFirestore") {
+            version = "0.1.0-2-rc"
+            extraOpts += listOf("-compiler-option", "-fmodules")
         }
+
+
     }
 
     sourceSets {
@@ -170,6 +182,9 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+
+            implementation(libs.kotlinx.serialization.json)
+
         }
 
         commonTest.dependencies {
@@ -182,15 +197,10 @@ kotlin {
             implementation(compose.uiTooling)
             implementation(libs.androidx.activityCompose)
             implementation(libs.firebase.common.ktx)
-            implementation(libs.firebase.messaging)
-            implementation(libs.gson)
             implementation(libs.kpermissions)
-
             implementation(project.dependencies.platform(libs.firebase.bom))
-            implementation(project(":FirebaseCore"))
-            //noinspection GradleDependency
-            implementation(libs.firebase.analytics)
-            implementation(libs.firebase.messaging.directboot)
+            implementation(libs.firebase.firestore)
+
 
         }
 
@@ -199,13 +209,14 @@ kotlin {
 
 
         iosMain.dependencies {
+
         }
 
     }
 }
 
 android {
-    namespace = "io.github.KFirebaseMessaging"
+    namespace = "io.github.KFirebaseFirestore"
     compileSdk = 35
 
     defaultConfig {
@@ -228,8 +239,18 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "io.github.FirebaseMessaging.desktopApp"
+            packageName = "io.github.KFirebaseFirestore.desktopApp"
             packageVersion = "1.0.0"
         }
+    }
+}
+
+tasks.register<Copy>("updateReadme") {
+    doLast {
+        val version = libs.versions.me.get()
+        val readmeFile = file("README.md")
+        val content =
+            readmeFile.readText().replace(Regex("Me Library: .*"), "Me Library: `$version`")
+        readmeFile.writeText(content)
     }
 }

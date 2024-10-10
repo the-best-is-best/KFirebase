@@ -1,6 +1,7 @@
 package io.github.firebase_auth
 
 import android.net.Uri
+import com.google.firebase.Firebase
 import com.google.firebase.auth.ActionCodeEmailInfo
 import com.google.firebase.auth.ActionCodeMultiFactorInfo
 import com.google.firebase.auth.ActionCodeResult.ERROR
@@ -13,10 +14,11 @@ import com.google.firebase.auth.ActionCodeResult.VERIFY_EMAIL
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.auth.auth
 import io.github.firebase_auth.KFirebaseAuth.Companion.currentUser
 
 actual class KFirebaseAuth {
-    internal var android = FirebaseAuth.getInstance()
+    internal var android = Firebase.auth
 
     companion object {
         internal var currentUser: FirebaseUser? = null
