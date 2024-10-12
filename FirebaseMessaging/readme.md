@@ -73,7 +73,7 @@ AndroidKFirebaseMessagingChannel(this).initChannel(
         <meta-data
   android:name="com.google.firebase.messaging.default_notification_channel_name"
             android:value="@string/default_notification_channel_name" />
-         // optional
+    <!-- optional -->
   <meta-data
   android:name="com.google.firebase.messaging.default_notification_color"     android:resource="@color/custom_color" />
 

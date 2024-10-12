@@ -49,7 +49,7 @@ mavenPublishing {
 
     pom {
         name.set("KFirebaseFirestore")
-        description.set("KFirebaseCore is a Kotlin Multiplatform library designed to streamline the integration of Firebase services in your mobile applications. With this library, developers can effortlessly initialize Firebase for both Android and iOS, enabling a unified and efficient development experience.")
+        description.set("KFirebaseFirestore is a Kotlin Multiplatform library designed to streamline the integration of Firebase services in your mobile applications. With this library, developers can effortlessly initialize Firebase for both Android and iOS, enabling a unified and efficient development experience.")
         url.set("https://github.com/the-best-is-best/KFirebase")
         licenses {
             license {
@@ -144,20 +144,10 @@ kotlin {
         ios.deploymentTarget =
             libs.versions.iosDeploymentTarget.get()  // Update this to the required version
 
-//        pod("FirebaseFirestoreInternal") {
-//            version = libs.versions.podFirebase.get()
-//            extraOpts += listOf("-compiler-option", "-fmodules")
-//        }
-//        pod("FirebaseFirestore") {
-//            version = libs.versions.podFirebase.get()
-//            extraOpts += listOf("-compiler-option", "-fmodules")
-//            useInteropBindingFrom("FirebaseFirestoreInternal")
-//
-//        }
 
         pod("kfirebaseFirestore") {
 
-            version = "0.1.0-5-rc"
+            version = "0.1.0-6-rc"
             extraOpts += listOf("-compiler-option", "-fmodules")
         }
 

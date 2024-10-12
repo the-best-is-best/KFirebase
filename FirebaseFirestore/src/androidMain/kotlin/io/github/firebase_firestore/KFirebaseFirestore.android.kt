@@ -1,11 +1,13 @@
 package io.github.firebase_firestore
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 
 actual class KFirebaseFirestore {
 
-    val firestore = FirebaseFirestore.getInstance()
+    private val firestore = FirebaseFirestore.getInstance()
+    private var listenerRegistration: ListenerRegistration? = null
 
 
     actual fun addDocument(
@@ -57,25 +59,7 @@ actual class KFirebaseFirestore {
             }
     }
 
-//    actual  fun listenToCollection(
-//        collection: String,
-//         callback: (Result<List<Map<String, Any?>>>) -> Unit
-//    ) {
-//        firestore.collection(collection).addSnapshotListener { snapshot, exception ->
-//            if (exception != null) {
-//                callback(Result.failure(exception))
-//                return@addSnapshotListener
-//            }
-//            val documents = snapshot?.documents?.mapNotNull { doc ->
-//                try {
-//                    doc.data
-//                } catch (e: Exception) {
-//                    null // Handle deserialization error
-//                }
-//            } ?: emptyList()
-//            callback(Result.success(documents))
-//        }
-//    }
+
 
     actual fun queryDocuments(
         collection: String,
@@ -145,6 +129,7 @@ actual class KFirebaseFirestore {
         callback: (Result<Unit>) -> Unit
     ) {
         try {
+
             firestore.collection(collection).document(documentId).set(data).addOnSuccessListener {
                 callback(Result.success(Unit))
             }.addOnFailureListener { exception ->
@@ -195,5 +180,34 @@ actual class KFirebaseFirestore {
         }.addOnFailureListener { exception ->
             callback(Result.failure(exception))
         }
+    }
+
+    actual fun listenToCollection(
+        collection: String,
+        callback: (Result<List<Map<String, Any?>>>) -> Unit
+    ) {
+        stopListenerCollection()
+        listenerRegistration = firestore.collection(collection)
+            .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+                if (firebaseFirestoreException != null) {
+                    // If there is an error, return it in the callback
+                    callback(Result.failure(firebaseFirestoreException))
+                    return@addSnapshotListener
+                }
+
+                // Map the documents to a list of maps
+                val documents = querySnapshot?.documents?.map { documentSnapshot ->
+                    documentSnapshot.data ?: emptyMap<String, Any?>()
+                } ?: emptyList()
+
+                // Return the documents as success
+                callback(Result.success(documents))
+            }
+
+    }
+
+    actual fun stopListenerCollection() {
+        listenerRegistration?.remove()
+        listenerRegistration = null
     }
 }

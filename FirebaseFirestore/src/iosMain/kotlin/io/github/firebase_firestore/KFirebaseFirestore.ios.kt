@@ -58,31 +58,6 @@ actual class KFirebaseFirestore {
 
     }
 
-//    actual  fun  listenToCollection(
-//        collection: String,
-//         callback: (Result<List<Map<String,Any?>>>) -> Unit
-//    ) {
-//
-//        firestore.collectionWithPath(collection).addSnapshotListener { firQuerySnapshot, nsError ->
-//            if(nsError != null){
-//                callback(Result.failure(nsError.convertNSErrorToException()))
-//                return@addSnapshotListener
-//            }
-//            val dataList: MutableList<Map<Any?, *>> = mutableListOf()
-//            (firQuerySnapshot?.documents as? List<FIRQueryDocumentSnapshot>)?.map {
-//                dataList.add(it.data())
-//
-//            }
-//
-//            try {
-//                callback(Result.success((convertMutableListToStringList(dataList))))
-//            } catch (e: Exception){
-//                callback(Result.failure(e))
-//            }
-//
-//        }
-//    }
-
     actual fun queryDocuments(
         collection: String,
         filters: List<Map<String, Comparable<*>>>,
@@ -187,6 +162,28 @@ actual class KFirebaseFirestore {
 
     private fun convertLongToNSNumber(longValue: Long?): NSNumber? {
         return longValue?.let { NSNumber(it.toDouble()) }
+    }
+
+    actual fun listenToCollection(
+        collection: String,
+        callback: (Result<List<Map<String, Any?>>>) -> Unit
+    ) {
+        stopListenerCollection()
+        firestore.startRealTimeListener(collection= collection){callbackIos ->
+            val error = callbackIos?.error()
+            val data  =callbackIos?.data()
+
+            if(error != null){
+                callback(Result.failure(error.convertNSErrorToException()))
+                return@startRealTimeListener
+            } else{
+                callback(Result.success(convertToListOfMaps(data)))
+            }
+        }
+    }
+
+    actual fun stopListenerCollection() {
+         firestore.stopRealTimeListener()
     }
 
 }
