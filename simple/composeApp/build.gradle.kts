@@ -94,7 +94,7 @@ android {
     defaultConfig {
         minSdk = 26
 
-        applicationId = "com.tbib.codyTech"
+        applicationId = "com.linkie.tech.cody"
         versionCode = 1
         versionName = "1.0.0"
 
