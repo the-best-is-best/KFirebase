@@ -62,6 +62,7 @@ kotlin {
             implementation(project(":FirebaseAnalytics"))
             implementation(project(":FirebaseAuth"))
             implementation(project(":FirebaseFirestore"))
+            implementation(project(":FirebaseDatabase"))
 
             implementation(libs.kotlinx.serialization.json)
 

@@ -176,6 +176,9 @@ kotlin {
 
             implementation(libs.kotlinx.serialization.json)
 
+            implementation(project(":FirebaseAnalytics"))
+
+
         }
 
         commonTest.dependencies {
@@ -188,7 +191,6 @@ kotlin {
             implementation(compose.uiTooling)
             implementation(libs.androidx.activityCompose)
             implementation(libs.firebase.common.ktx)
-            implementation(libs.kpermissions)
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(libs.firebase.firestore)
 
