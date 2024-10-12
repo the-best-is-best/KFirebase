@@ -13,6 +13,7 @@ target 'iosApp' do
   pod "FirebaseAuth" , '11.3.0'
   pod 'kfirebaseFirestore' , '0.1.0-6-rc'
   pod 'FirebaseDatabase', '11.3.0'
+  pod "FirebaseStorage" , "11.3.0"
 
 
 end

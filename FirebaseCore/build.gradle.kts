@@ -230,11 +230,3 @@ compose.desktop {
     }
 }
 
-tasks.register<Copy>("updateReadme") {
-    doLast {
-        val version = libs.versions.me.get()
-        val readmeFile = file("README.md")
-        val content = readmeFile.readText().replace(Regex("Me Library: .*"), "Me Library: `$version`")
-        readmeFile.writeText(content)
-    }
-}

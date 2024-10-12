@@ -42,14 +42,14 @@ tasks.withType<PublishToMavenRepository> {
 
 
 mavenPublishing {
-    coordinates("io.github.the-best-is-best", "kfirebase-database", libs.versions.me.get())
+    coordinates("io.github.the-best-is-best", "kfirebase-storage", libs.versions.me.get())
 
     publishToMavenCentral(SonatypeHost.S01)
     signAllPublications()
 
     pom {
-        name.set("KFirebaseDatabase")
-        description.set("KFirebaseDatabase is a Kotlin Multiplatform library designed to streamline the integration of Firebase services in your mobile applications. With this library, developers can effortlessly initialize Firebase for both Android and iOS, enabling a unified and efficient development experience.")
+        name.set("KFirebaseStorage")
+        description.set("KFirebaseStorage is a Kotlin Multiplatform library designed to streamline the integration of Firebase services in your mobile applications. With this library, developers can effortlessly initialize Firebase for both Android and iOS, enabling a unified and efficient development experience.")
         url.set("https://github.com/the-best-is-best/KFirebase")
         licenses {
             license {
@@ -124,7 +124,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "KFirebaseDatabase"
+            baseName = "KFirebaseStorage"
             isStatic = true
         }
     }
@@ -135,16 +135,16 @@ kotlin {
 
         // Optional properties
         // Configure the Pod name here instead of changing the Gradle project name
-        name = "KFirebaseDatabase"
+        name = "KFirebaseStorage"
 
         framework {
-            baseName = "KFirebaseDatabase"
+            baseName = "KFirebaseStorage"
         }
         noPodspec()
         ios.deploymentTarget =
             libs.versions.iosDeploymentTarget.get()  // Update this to the required version
 
-        pod("FirebaseDatabase") {
+        pod("FirebaseStorage") {
             version = libs.versions.podFirebase.get()
             extraOpts += listOf("-compiler-option", "-fmodules")
 
@@ -189,7 +189,7 @@ kotlin {
 
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(libs.firebase.common.ktx)
-            implementation(libs.firebase.database)
+            implementation(libs.firebase.storage)
 
         }
 
@@ -204,7 +204,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.KFirebaseDatabase"
+    namespace = "io.github.KFirebaseStorage"
     compileSdk = 35
 
     defaultConfig {
@@ -227,7 +227,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "io.github.KFirebaseDatabase.desktopApp"
+            packageName = "io.github.KFirebaseStorage.desktopApp"
             packageVersion = "1.0.0"
         }
     }

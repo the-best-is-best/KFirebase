@@ -1,4 +1,4 @@
-<h1 align="center">KFirebaseDatabase</h1><br>
+<h1 align="center">KFirebaseStorage</h1><br>
 <div align="center">
 <a href="https://opensource.org/licenses/Apache-2.0"><img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
 <a href="https://android-arsenal.com/api?level=21" rel="nofollow">
@@ -12,18 +12,18 @@
 
 <br>
 
-### KFirebaseDatabase is a Kotlin Multiplatform library designed to streamline the integration of Firebase services in your mobile applications. With this library, developers can effortlessly initialize Firebase for both Android and iOS, enabling a unified and efficient development experience
+### KFirebaseStorage is a Kotlin Multiplatform library designed to streamline the integration of Firebase services in your mobile applications. With this library, developers can effortlessly initialize Firebase for both Android and iOS, enabling a unified and efficient development experience
 
 <hr>
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.the-best-is-best/kfirebase-core)](https://central.sonatype.com/artifact/io.github.the-best-is-best/kfirebase-core)
 
-KFirebaseDatabase is available on `mavenCentral()`.
+KFirebaseStorage is available on `mavenCentral()`.
 
 ## Installation
 
 ```kotlin
-implementation("io.github.the-best-is-best:kfirebase-database:1.0.0-rc1")
+implementation("io.github.the-best-is-best:kfirebase-storage:1.0.0-rc1")
 ```
 
 ### androidMain
@@ -35,7 +35,7 @@ KAndroidFirebaseCore.initialize(this)
 ## Need add this in pod file if not exist run ` pod init `
 
 ```pod
- pod 'FirebaseDatabase' , '11.3.0'
+ pod 'FirebaseStorage' , '11.3.0'
 ```
 
 ### iosApp
@@ -50,19 +50,24 @@ KAndroidFirebaseCore.initialize(this)
 
 ```kotlin
 
-expect class KFirebaseDatabase() {
-    fun write(path:String , data:Map<String, Any> , callback: (Result<Boolean?>) -> Unit)
-    fun read(path: String , callback: (Result<Any?>) -> Unit)
-
-    fun writeList(path: String, dataList: List<Map<String, Any>>, callback: (Result<Boolean>) -> Unit)
-    fun readList(path: String, callback: (Result<List<Any?>>) -> Unit)
-
-    fun delete(path:String , callback: (Result<Boolean?>) -> Unit)
-
-    fun update(path: String , data:Map<String, Any> ,callback: (Result<Boolean?>) -> Unit)
+expect class KFirebaseStorage() {
+    fun uploadFile(
+        filePath: String,
+        fileData: ByteArray,
+        callback: (Result<Pair<String?, String>>) -> Unit
+    )
+    fun downloadFile(filePath: String, callback: (Result<KFirebaseStorageDownloadedFile?>) -> Unit)
+    fun deleteFile(filePath: String, callback: (Result<Unit>) -> Unit)
 }
+
 ```
 
-### Note
+#### KFirebaseStorageDownloadedFile
 
-- path like `books/$id`
+```kotlin
+data class KFirebaseStorageDownloadedFile(
+    val fileName: String,
+    val fileExtension: String,
+    val fileBytes: ByteArray
+)
+```

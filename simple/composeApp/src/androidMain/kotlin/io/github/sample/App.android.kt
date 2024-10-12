@@ -10,11 +10,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import io.github.firebase_core.AndroidKFirebaseCore
 import io.github.firebase_messaging.AndroidKFirebaseMessagingChannel
 import io.github.firebase_messaging.KFirebaseMessagingImpl
+import io.github.vinceglb.filekit.core.FileKit
 
 class AppActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        FileKit.init(this)
         AndroidKFirebaseCore.initialize(this)
         AndroidKFirebaseMessagingChannel(this).initChannel(
             "fcm",
