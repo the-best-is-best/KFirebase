@@ -7,6 +7,7 @@ actual class KFirebaseFirestore {
 
     val firestore = FirebaseFirestore.getInstance()
 
+
     actual fun addDocument(
         collection: String,
         documentId: String,
@@ -78,39 +79,56 @@ actual class KFirebaseFirestore {
 
     actual fun queryDocuments(
         collection: String,
-        filters: List<Pair<String, Any>>,
+        filters: List<Map<String, Comparable<*>>>, // List of maps for filters
         orderBy: String?,
         limit: Long?,
         callback: (Result<List<Map<String, Any?>>>) -> Unit
     ) {
-        // Android implementation with Firestore
         var query: Query = firestore.collection(collection)
 
-        filters.forEach { (field, value) ->
-            when (value) {
-                is String -> query = query.whereEqualTo(field, value)
-                is Int -> query = query.whereEqualTo(field, value)
-                is Double -> query = query.whereEqualTo(field, value)
-                is Long -> query = query.whereEqualTo(field, value)
-                is Pair<*, *> -> {
-                    val operator = value.first as String
-                    val filterValue = value.second!!
+        // Iterate through the filters
+        filters.forEach { filter ->
+            val field = filter["field"] as? String ?: return@forEach // Extract field name
+            val operator = filter["operator"] as? String ?: return@forEach // Extract operator
+            val value = filter["value"] ?: return@forEach // Extract value
 
-                    when (operator) {
-                        "=" -> query = query.whereEqualTo(field, filterValue)
-                        "<" -> query = query.whereLessThan(field, filterValue)
-                        "<=" -> query = query.whereLessThanOrEqualTo(field, filterValue)
-                        ">" -> query = query.whereGreaterThan(field, filterValue)
-                        ">=" -> query = query.whereGreaterThanOrEqualTo(field, filterValue)
-                        "!=" -> query = query.whereNotEqualTo(field, filterValue)
+            // Handle different cases based on the operator
+            when (operator) {
+                "==" -> query = query.whereEqualTo(field, value)
+                "!=" -> query = query.whereNotEqualTo(field, value)
+                "<" -> query = query.whereLessThan(field, value)
+                "<=" -> query = query.whereLessThanOrEqualTo(field, value)
+                ">" -> query = query.whereGreaterThan(field, value)
+                ">=" -> query = query.whereGreaterThanOrEqualTo(field, value)
+                "array-contains" -> query = query.whereArrayContains(field, value)
+                "array-contains-any" -> {
+                    if (value is List<*>) {
+                        query = query.whereArrayContainsAny(field, value)
                     }
                 }
+
+                "in" -> {
+                    if (value is List<*>) {
+                        query = query.whereIn(field, value)
+                    }
+                }
+
+                "not-in" -> {
+                    if (value is List<*>) {
+                        query = query.whereNotIn(field, value)
+                    }
+                }
+                // Handle additional operators as needed
             }
         }
 
+        // Add order by clause if provided
         orderBy?.let { query = query.orderBy(it) }
+
+        // Add limit if provided
         limit?.let { query = query.limit(it) }
 
+        // Execute the query and return the result
         query.get().addOnSuccessListener { querySnapshot ->
             val documents = querySnapshot.documents.mapNotNull { it.data }
             callback(Result.success(documents))

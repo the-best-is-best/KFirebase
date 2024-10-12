@@ -85,11 +85,12 @@ actual class KFirebaseFirestore {
 
     actual fun queryDocuments(
         collection: String,
-        filters: List<Pair<String, Any>>,
+        filters: List<Map<String, Comparable<*>>>,
         orderBy: String?,
         limit: Long?,
         callback: (Result<List<Map<String, Any?>>>) -> Unit
     ) {
+
         firestore.getDocsByFilter(
             collection,
             orderBy,
@@ -105,9 +106,8 @@ actual class KFirebaseFirestore {
                 callback(Result.success(convertToListOfMaps(data)))
             }
         }
-
-
     }
+
 
     actual fun updateDocument(
         collection: String,

@@ -5,7 +5,7 @@ kotlinxSerializationJson = "1.7.3"
 kpermissions = "1.0.3"
 me = "1.0.0-rc1-2-SNAPSHOT"
 podFirebase = "11.3.0"
-kotlin = "2.0.21-RC"
+kotlin = "2.0.21"
 compose = "1.7.0-beta02"
 agp = "8.7.0"
 androidx-activityCompose = "1.9.2"
@@ -16,8 +16,8 @@ firebaseCommonKtx = "21.0.0"
 iosDeploymentTarget = "13.0"
 settings-api = "2.0"
 settings-language = "2.0"
-[libraries]
 
+[libraries]
 androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-testManifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-uiTest" }
 androidx-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-uiTest" }

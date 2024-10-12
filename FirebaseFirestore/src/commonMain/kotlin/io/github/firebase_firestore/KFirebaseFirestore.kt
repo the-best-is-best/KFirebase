@@ -33,7 +33,7 @@ expect class KFirebaseFirestore() {
     // Query documents with filters, sorting, and limits
     fun queryDocuments(
         collection: String,
-        filters: List<Pair<String, Any>> = emptyList(),
+        filters: List<Map<String, Comparable<*>>> = emptyList(),
         orderBy: String? = null,
         limit: Long? = null,
         callback: (Result<List<Map<String, Any?>>>) -> Unit

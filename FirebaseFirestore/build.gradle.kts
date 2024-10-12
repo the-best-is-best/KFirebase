@@ -156,7 +156,8 @@ kotlin {
 //        }
 
         pod("kfirebaseFirestore") {
-            version = "0.1.0-2-rc"
+
+            version = "0.1.0-5-rc"
             extraOpts += listOf("-compiler-option", "-fmodules")
         }
 

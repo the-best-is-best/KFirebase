@@ -18,43 +18,7 @@ import io.github.firebase_core.KFirebaseCore
 import io.github.firebase_firestore.KFirebaseFirestore
 import io.github.sample.theme.AppTheme
 
-data class User(
-    val uid: String?,
-    val displayName: String?,
-    val email: String?,
-    val phoneNumber: String?,
-    val photoURL: String?,
-    val isAnonymous: Boolean?,
-    val isEmailVerified: Boolean?,
-    val metaData: UserMetaData?
-) {
-    fun toMap(): Map<String, Any?> {
-        // Manually create a map from the User properties
-        return mapOf(
-            "uid" to uid,
-            "displayName" to displayName,
-            "email" to email,
-            "phoneNumber" to phoneNumber,
-            "photoURL" to photoURL,
-            "isAnonymous" to isAnonymous,
-            "isEmailVerified" to isEmailVerified,
-            "metaData" to metaData?.toMap() // Call toMap on metaData if it is not null
-        )
-    }
-}
 
-data class UserMetaData(
-    val creationTime: Double?,
-    val lastSignInTime: Double?
-) {
-    // Helper function to convert UserMetaData to a Map
-    fun toMap(): Map<String, Any?> {
-        return mapOf(
-            "creationTime" to creationTime,
-            "lastSignInTime" to lastSignInTime
-        )
-    }
-}
 
 
 @Composable
@@ -64,19 +28,49 @@ internal fun App() = AppTheme {
     val app = KFirebaseCore.app()
     println(app.options) // Check this log
     val db = KFirebaseFirestore()
-    val user = User(
-        uid = "12345",
-        displayName = "John Doe",
-        email = "john.doe@example.com",
-        phoneNumber = "+123456789",
-        photoURL = "http://example.com/photo.jpg",
-        isAnonymous = false,
-        isEmailVerified = true,
-        metaData = UserMetaData(
-            creationTime = 1633072800.0,
-            lastSignInTime = 1633169200.0
+    val users = listOf(
+        mapOf(
+            "id" to 1,
+            "name" to "John",
+            "age" to 30,
+            "rating" to 4.8,
+            "hobbies" to listOf("reading", "swimming"),
+            "status" to "active"
+        ),
+        mapOf(
+            "id" to 2,
+            "name" to "Alice",
+            "age" to 25,
+            "rating" to 4.5,
+            "hobbies" to listOf("painting", "running"),
+            "status" to "pending"
+        ),
+        mapOf(
+            "id" to 3,
+            "name" to "Bob",
+            "age" to 35,
+            "rating" to 4.9,
+            "hobbies" to listOf("cycling", "hiking"),
+            "status" to "inactive"
+        ),
+        mapOf(
+            "id" to 4,
+            "name" to "Eve",
+            "age" to 22,
+            "rating" to 4.2,
+            "hobbies" to listOf("dancing", "gaming"),
+            "status" to "active"
+        ),
+        mapOf(
+            "id" to 5,
+            "name" to "Charlie",
+            "age" to 28,
+            "rating" to 4.0,
+            "hobbies" to listOf("photography", "reading"),
+            "status" to "active"
         )
     )
+
     val collection = "users"
 
 
@@ -94,17 +88,20 @@ internal fun App() = AppTheme {
 
             ElevatedButton(
                 onClick = {
-                    db.addDocument(
-                        collection,
-                        user.uid.toString(),
-                        user.toMap()
-                    ) {
-                        it.onFailure {
-                            println("error add doc $it")
+                    users.forEach {
+                        db.addDocument(
+                            collection,
+                            it["id"].toString(),
+                            it
+                        ) {
+                            it.onFailure {
+                                println("error add doc $it")
+                            }
                         }
                     }
+
                 }) {
-                Text("Add docs")
+                Text("Add list dummy users data")
             }
             Spacer(Modifier.height(20.dp))
 
@@ -122,13 +119,37 @@ internal fun App() = AppTheme {
                 }) {
                 Text("get users data")
             }
+            Spacer(Modifier.height(20.dp))
+
+            ElevatedButton(
+
+                onClick = {
+                    val filters = listOf(
+                        mapOf("field" to "age", "operator" to ">=", "value" to 25),
+                        mapOf("field" to "status", "operator" to "==", "value" to "active"),
+                        mapOf(
+                            "field" to "hobbies",
+                            "operator" to "array-contains",
+                            "value" to "reading"
+                        )
+                    )
+
+                    db.queryDocuments(collection, filters, orderBy = "age") {
+                        it.onSuccess {
+                            println("data is ${it}")
+                        }
+
+                    }
+                }) {
+                Text("Example filters   ")
+            }
 
 
             Spacer(Modifier.height(20.dp))
             ElevatedButton(
 
                 onClick = {
-                    db.getDocumentById(collection, user.uid.toString()) {
+                    db.getDocumentById(collection, users.last()["id"].toString()) {
                         it.onFailure {
                             println("error get data $it")
                         }
@@ -142,7 +163,7 @@ internal fun App() = AppTheme {
             Spacer(Modifier.height(20.dp))
             ElevatedButton(
                 onClick = {
-                    db.deleteDocument(collection, user.uid.toString()) {
+                    db.deleteDocument(collection, users.last()["id"].toString()) {
                         it.onFailure {
                             println("delete data error $it")
                         }
