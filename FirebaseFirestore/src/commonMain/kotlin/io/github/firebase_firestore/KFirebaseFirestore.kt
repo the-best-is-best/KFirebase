@@ -23,14 +23,15 @@ expect class KFirebaseFirestore() {
         documentId: String,
         callback: (Result<Map<String, Any?>>) -> Unit
     )
-
-    // Real-time listener for a collection - support only one collection
      fun listenToCollection(
         collection: String,
-         callback: (Result<List<Map<String, Any?>>>) -> Unit
+        listenerId: String,
+        callback: (Result<List<Map<String, Any?>>>) -> Unit
     )
   // stop collection listener
-     fun stopListenerCollection()
+  fun stopListenerCollection(listenerId: String)
+
+    fun stopAllListeners()
 
     // Query documents with filters, sorting, and limits
     fun queryDocuments(

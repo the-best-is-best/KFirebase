@@ -50,6 +50,9 @@ KAndroidFirebaseCore.initialize(this)
 
 ```kotlin
 
+// commonMain/src/commonMain/kotlin/io/github/firebase_firestore/KFirebaseFirestore.kt
+package io.github.firebase_firestore
+
 expect class KFirebaseFirestore() {
 
     // Add a custom object to the collection
@@ -73,13 +76,15 @@ expect class KFirebaseFirestore() {
         callback: (Result<Map<String, Any?>>) -> Unit
     )
 
-    // Real-time listener for a collection - support only one collection
     fun listenToCollection(
         collection: String,
+        listenerId: String,
         callback: (Result<List<Map<String, Any?>>>) -> Unit
     )
     // stop collection listener
-    fun stopListenerCollection()
+    fun stopListenerCollection(listenerId: String)
+
+    fun stopAllListeners()
 
     // Query documents with filters, sorting, and limits
     fun queryDocuments(
@@ -115,6 +120,8 @@ expect class KFirebaseFirestore() {
 
 
 }
+
+
 
 
 ```

@@ -1,10 +1,14 @@
 package io.github.firebase_database
 
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 actual class KFirebaseDatabase {
     private val database: DatabaseReference = FirebaseDatabase.getInstance().reference
+    private val listenersMap = mutableMapOf<String, ValueEventListener>()
 
     actual fun write(path: String, data: Map<String, Any>, callback: (Result<Boolean?>) -> Unit) {
         database.child(path).setValue(data).addOnCompleteListener { task ->
@@ -96,4 +100,29 @@ actual class KFirebaseDatabase {
             callback(Result.failure(e))
         }
     }
+
+    actual fun addObserveListener(
+        path: String,
+        callback: (Result<Any?>) -> Unit
+    ) {
+        val ref = database.child(path)
+        val listener = ref.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                callback(Result.success(snapshot.value))
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                callback(Result.failure(Exception(error.message)))
+            }
+        })
+        listenersMap[path] = listener
+    }
+
+    actual fun removeObserver(path: String) {
+        val listener = listenersMap.remove(path)
+        if (listener != null) {
+            database.child(path).removeEventListener(listener)
+        }
+    }
+
 }

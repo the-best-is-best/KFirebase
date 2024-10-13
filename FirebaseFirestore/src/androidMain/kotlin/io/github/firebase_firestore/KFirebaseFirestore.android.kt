@@ -7,8 +7,9 @@ import com.google.firebase.firestore.Query
 actual class KFirebaseFirestore {
 
     private val firestore = FirebaseFirestore.getInstance()
-    private var listenerRegistration: ListenerRegistration? = null
 
+    // Maintain a map of listenerId to ListenerRegistration
+    private val listenerRegistrations: MutableMap<String, ListenerRegistration> = mutableMapOf()
 
     actual fun addDocument(
         collection: String,
@@ -59,24 +60,20 @@ actual class KFirebaseFirestore {
             }
     }
 
-
-
     actual fun queryDocuments(
         collection: String,
-        filters: List<Map<String, Comparable<*>>>, // List of maps for filters
+        filters: List<Map<String, Comparable<*>>>,
         orderBy: String?,
         limit: Long?,
         callback: (Result<List<Map<String, Any?>>>) -> Unit
     ) {
         var query: Query = firestore.collection(collection)
 
-        // Iterate through the filters
         filters.forEach { filter ->
-            val field = filter["field"] as? String ?: return@forEach // Extract field name
-            val operator = filter["operator"] as? String ?: return@forEach // Extract operator
-            val value = filter["value"] ?: return@forEach // Extract value
+            val field = filter["field"] as? String ?: return@forEach
+            val operator = filter["operator"] as? String ?: return@forEach
+            val value = filter["value"] ?: return@forEach
 
-            // Handle different cases based on the operator
             when (operator) {
                 "==" -> query = query.whereEqualTo(field, value)
                 "!=" -> query = query.whereNotEqualTo(field, value)
@@ -85,34 +82,17 @@ actual class KFirebaseFirestore {
                 ">" -> query = query.whereGreaterThan(field, value)
                 ">=" -> query = query.whereGreaterThanOrEqualTo(field, value)
                 "array-contains" -> query = query.whereArrayContains(field, value)
-                "array-contains-any" -> {
-                    if (value is List<*>) {
-                        query = query.whereArrayContainsAny(field, value)
-                    }
-                }
+                "array-contains-any" -> if (value is List<*>) query =
+                    query.whereArrayContainsAny(field, value)
 
-                "in" -> {
-                    if (value is List<*>) {
-                        query = query.whereIn(field, value)
-                    }
-                }
-
-                "not-in" -> {
-                    if (value is List<*>) {
-                        query = query.whereNotIn(field, value)
-                    }
-                }
-                // Handle additional operators as needed
+                "in" -> if (value is List<*>) query = query.whereIn(field, value)
+                "not-in" -> if (value is List<*>) query = query.whereNotIn(field, value)
             }
         }
 
-        // Add order by clause if provided
         orderBy?.let { query = query.orderBy(it) }
-
-        // Add limit if provided
         limit?.let { query = query.limit(it) }
 
-        // Execute the query and return the result
         query.get().addOnSuccessListener { querySnapshot ->
             val documents = querySnapshot.documents.mapNotNull { it.data }
             callback(Result.success(documents))
@@ -121,7 +101,6 @@ actual class KFirebaseFirestore {
         }
     }
 
-
     actual fun updateDocument(
         collection: String,
         documentId: String,
@@ -129,7 +108,6 @@ actual class KFirebaseFirestore {
         callback: (Result<Unit>) -> Unit
     ) {
         try {
-
             firestore.collection(collection).document(documentId).set(data).addOnSuccessListener {
                 callback(Result.success(Unit))
             }.addOnFailureListener { exception ->
@@ -153,9 +131,9 @@ actual class KFirebaseFirestore {
     }
 
     actual fun batchWrite(
-        addOperations: List<Pair<String, Any>>, // collection and data
-        updateOperations: List<Triple<String, String, Any>>, // collection, documentId, data
-        deleteOperations: List<Pair<String, String>>, // collection and documentId
+        addOperations: List<Pair<String, Any>>,
+        updateOperations: List<Triple<String, String, Any>>,
+        deleteOperations: List<Pair<String, String>>,
         callback: (Result<Unit>) -> Unit
     ) {
         val batch = firestore.batch()
@@ -184,30 +162,34 @@ actual class KFirebaseFirestore {
 
     actual fun listenToCollection(
         collection: String,
+        listenerId: String,
         callback: (Result<List<Map<String, Any?>>>) -> Unit
     ) {
-        stopListenerCollection()
-        listenerRegistration = firestore.collection(collection)
+        val registration = firestore.collection(collection)
             .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
                 if (firebaseFirestoreException != null) {
-                    // If there is an error, return it in the callback
                     callback(Result.failure(firebaseFirestoreException))
                     return@addSnapshotListener
                 }
 
-                // Map the documents to a list of maps
                 val documents = querySnapshot?.documents?.map { documentSnapshot ->
                     documentSnapshot.data ?: emptyMap<String, Any?>()
                 } ?: emptyList()
 
-                // Return the documents as success
                 callback(Result.success(documents))
             }
 
+        // Add to listener registrations map
+        listenerRegistrations[listenerId] = registration
     }
 
-    actual fun stopListenerCollection() {
-        listenerRegistration?.remove()
-        listenerRegistration = null
+    actual fun stopListenerCollection(listenerId: String) {
+        listenerRegistrations[listenerId]?.remove() // Stop the listener
+        listenerRegistrations.remove(listenerId) // Remove it from the map
+    }
+
+    actual fun stopAllListeners() {
+        listenerRegistrations.values.forEach { it.remove() } // Stop all listeners
+        listenerRegistrations.clear() // Clear the map
     }
 }

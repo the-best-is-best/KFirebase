@@ -166,10 +166,10 @@ actual class KFirebaseFirestore {
 
     actual fun listenToCollection(
         collection: String,
+        listenerId: String,
         callback: (Result<List<Map<String, Any?>>>) -> Unit
     ) {
-        stopListenerCollection()
-        firestore.startRealTimeListener(collection= collection){callbackIos ->
+        firestore.startRealTimeListener(collection, listenerId) { callbackIos ->
             val error = callbackIos?.error()
             val data  =callbackIos?.data()
 
@@ -182,8 +182,12 @@ actual class KFirebaseFirestore {
         }
     }
 
-    actual fun stopListenerCollection() {
-         firestore.stopRealTimeListener()
+    actual fun stopAllListeners() {
+        firestore.stopAllListeners()
+    }
+
+    actual fun stopListenerCollection(listenerId: String) {
+        firestore.stopRealTimeListenerById(listenerId)
     }
 
 }

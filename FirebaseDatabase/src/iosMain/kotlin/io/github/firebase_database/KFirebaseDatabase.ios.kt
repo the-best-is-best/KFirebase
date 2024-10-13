@@ -1,14 +1,17 @@
 package io.github.firebase_database
 
 import cocoapods.FirebaseDatabase.FIRDataEventType
-import cocoapods.FirebaseDatabase.FIRDatabase
-import cocoapods.FirebaseDatabase.FIRDatabaseReference
 import cocoapods.FirebaseDatabase.FIRDataSnapshot
+import cocoapods.FirebaseDatabase.FIRDatabase
+import cocoapods.FirebaseDatabase.FIRDatabaseHandle
+import cocoapods.FirebaseDatabase.FIRDatabaseReference
 import platform.Foundation.NSError
 
 // Class to handle Firebase Database operations
 actual class KFirebaseDatabase {
     private val databaseRef: FIRDatabaseReference = FIRDatabase.database().reference()
+    private val listenersMap = mutableMapOf<String,
+            FIRDatabaseHandle>()
 
     actual fun write(
         path: String,
@@ -106,6 +109,29 @@ actual class KFirebaseDatabase {
            }
         }
     }
+
+    actual fun addObserveListener(
+        path: String,
+        callback: (Result<Any?>) -> Unit
+    ) {
+        val ref = databaseRef.child(path)
+        val handle =
+            ref.observeEventType(FIRDataEventType.FIRDataEventTypeValue) { snapshot, error ->
+                if (error != null) {
+                    callback(Result.failure(FirebaseDatabaseException(error)))
+                } else {
+                    callback(Result.success(snapshot?.value))
+                }
+            }
+        listenersMap[path] = handle
+    }
+
+    actual fun removeObserver(path: String) {
+        val handle = listenersMap.remove(path)
+        if (handle != null) {
+            databaseRef.child(path).removeObserverWithHandle(handle)
+        }
+    }
 }
 
 // Extension function to convert NSError to a custom Exception
@@ -120,9 +146,9 @@ fun NSError.convertNSErrorToException(): Exception {
 class FirebaseDatabaseException(message: String?, cause: Throwable? = null) : Exception(message, cause)
 
 fun convertMutableMapToMap(mutableMap: MutableMap<String, Any>): Map<Any?, *> {
-    return mutableMap.mapKeys { it.key as Any? } // Convert keys to Any?
+    return mutableMap.mapKeys { it.key } // Convert keys to Any?
 }
 
 fun convertToAnyKeyMap(map: Map<String, Any>): Map<Any?, *> {
-    return map.mapKeys { it.key as Any? }  // Converts the keys to Any?
+    return map.mapKeys { it.key }  // Converts the keys to Any?
 }
