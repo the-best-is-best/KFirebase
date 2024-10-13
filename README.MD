@@ -1,7 +1,5 @@
 # KFirebase
 
-## Note not deployed yet
-
 <br>
 
 <table>
