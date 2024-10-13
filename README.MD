@@ -50,10 +50,16 @@
         <td style="">Firebase Cloud Storage</td>
         <td style="text-align:center;"><img src="https://img.shields.io/badge/%20✓-green?style=flat-square&color=ffd32c" alt="✓"></td>
         <td style="text-align:center;"><a href="https://github.com/the-best-is-best/KFirebase/blob/main/FirebaseStorage/readme.md">Click me</a></td>
-    </tr>
-        <tr>
-        <td style="">Firebase Remote Config</td>
-        <td style="text-align:center;"><img src="https://img.shields.io/badge/%20x-red?style=flat-square&color=c30010" alt="x"></td>
-        <td style="text-align:center;"><a href="https://github.com/the-best-is-best/KFirebase/blob/main/FirebaseRemoteConfig/readme.md">Click me</a></td>
-    </tr>
+
+[//]: # (    </tr>)
+
+[//]: # (        <tr>)
+
+[//]: # (        <td style="">Firebase Remote Config</td>)
+
+[//]: # (        <td style="text-align:center;"><img src="https://img.shields.io/badge/%20x-red?style=flat-square&color=c30010" alt="x"></td>)
+
+[//]: # (        <td style="text-align:center;"><a href="https://github.com/the-best-is-best/KFirebase/blob/main/FirebaseRemoteConfig/readme.md">Click me</a></td>)
+
+[//]: # (    </tr>)
 </table>
