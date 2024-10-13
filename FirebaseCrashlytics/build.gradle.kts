@@ -44,7 +44,7 @@ tasks.withType<PublishToMavenRepository> {
 mavenPublishing {
     coordinates("io.github.the-best-is-best", "kfirebase-crashlytics", libs.versions.me.get())
 
-    publishToMavenCentral(SonatypeHost.S01)
+    publishToMavenCentral(SonatypeHost.S01, true)
     signAllPublications()
 
     pom {
