@@ -33,7 +33,6 @@
     <td style="text-align:center;"><img src="https://img.shields.io/badge/%20✓-green?style=flat-square&color=ffd32c" alt="✓"></td>
     <td style="text-align:center;"><a href="https://github.com/the-best-is-best/KFirebase/blob/main/FirebaseAuth/readme.md">Click me</a></td>
   </tr>
-    </tr>
     <tr>
         <td style="">Firebase Firestore</td>
         <td style="text-align:center;"><img src="https://img.shields.io/badge/%20✓-green?style=flat-square&color=ffd32c" alt="✓"></td>
