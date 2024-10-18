@@ -5,14 +5,26 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import java.lang.ref.WeakReference
 
-class AndroidKFirebaseMessagingChannel(private val context: Activity) {
+class AndroidKFirebaseMessagingChannel {
 
 
     companion object {
-        var icon: Int? = null
-        var id: String? = null
+        private var activity: WeakReference<Activity?> = WeakReference(null)
+
+        internal var icon: Int? = null
+        internal var id: String? = null
+
+        internal fun getActivity(): Activity {
+            return activity.get()!!
+        }
+
+        fun initialization(activity: Activity) {
+            this.activity = WeakReference(activity)
+        }
     }
+
 
     // Initialize Notification Channel
     fun initChannel(id: String, name: String, icon: Int, channelDesc: String? = null) {
@@ -30,7 +42,7 @@ class AndroidKFirebaseMessagingChannel(private val context: Activity) {
 
 
             val notificationManager =
-                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                getActivity().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(notificationChannel)
         }
     }

@@ -1,14 +1,14 @@
 package io.github.firebase_analytics
 
 import com.google.firebase.analytics.FirebaseAnalytics
-import io.github.firebase_core.AndroidKFirebaseCore
 
 actual class KFirebaseAnalytics actual constructor() {
     actual fun logEvent(
         eventName: String,
         params: Map<String, Any>
     ) {
-        val firebaseAnalytics = FirebaseAnalytics.getInstance(AndroidKFirebaseCore.context)
+        val firebaseAnalytics =
+            FirebaseAnalytics.getInstance(AndroidKFirebaseAnalytics.getActivity())
 
         val bundle = android.os.Bundle()
         params.forEach { (key, value) ->

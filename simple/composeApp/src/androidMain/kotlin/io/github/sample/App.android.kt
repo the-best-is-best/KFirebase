@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import io.github.firebase_analytics.AndroidKFirebaseAnalytics
 import io.github.firebase_core.AndroidKFirebaseCore
 import io.github.firebase_messaging.AndroidKFirebaseMessagingChannel
 import io.github.firebase_messaging.KFirebaseMessagingImpl
@@ -18,7 +19,9 @@ class AppActivity : ComponentActivity() {
         enableEdgeToEdge()
         FileKit.init(this)
         AndroidKFirebaseCore.initialize(this)
-        AndroidKFirebaseMessagingChannel(this).initChannel(
+        AndroidKFirebaseAnalytics.initialization(this)
+        AndroidKFirebaseMessagingChannel.initialization(this)
+        AndroidKFirebaseMessagingChannel().initChannel(
             "fcm",
             "fcm notification",
             R.drawable.ic_notification

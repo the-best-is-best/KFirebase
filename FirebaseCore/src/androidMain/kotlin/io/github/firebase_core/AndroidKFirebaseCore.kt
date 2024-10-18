@@ -8,12 +8,10 @@ import io.github.kpermissions.handler.PermissionHandler
 
 @SuppressLint("StaticFieldLeak")
 object AndroidKFirebaseCore {
-    lateinit var context: Activity
-    fun initialize(context: Activity) {
-        PermissionHandler.init(context)
 
+    fun initialize(activity: Activity) {
+        PermissionHandler.init(activity)
 
-        AndroidKFirebaseCore.context = context
-        Firebase.initialize(context = context)
+        Firebase.initialize(context = activity)
     }
 }

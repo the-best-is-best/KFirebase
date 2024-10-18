@@ -31,7 +31,8 @@ implementation("io.github.the-best-is-best:kfirebase-messaging:1.0.0-rc1")
 ```kotlin
 
 KAndroidFirebaseCore.initialize(this)
-AndroidKFirebaseMessagingChannel(this).initChannel(
+AndroidKFirebaseMessagingChannel.initialization(this)
+AndroidKFirebaseMessagingChannel().initChannel(
     "fcm",  // id
     "fcm notification", // name
     R.drawable.ic_notification // icon

@@ -30,6 +30,7 @@ implementation("io.github.the-best-is-best:kfirebase-analytics:1.0.0-rc1")
 
 ```kotlin
 KAndroidFirebaseCore.initialize(this)
+AndroidKFirebaseAnalytics.initialization(this)
 ```
 
 ## Need add this in pod file if not exist run ` pod init `

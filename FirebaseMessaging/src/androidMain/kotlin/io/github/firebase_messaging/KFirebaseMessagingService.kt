@@ -9,7 +9,6 @@ import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
-import io.github.firebase_core.AndroidKFirebaseCore
 import kotlin.random.Random
 
 class KFirebaseMessagingService : FirebaseMessagingService() {
@@ -54,7 +53,7 @@ class KFirebaseMessagingService : FirebaseMessagingService() {
 
         // Create a PendingIntent to be triggered when the notification is clicked
         val pendingIntent = PendingIntent.getBroadcast(
-            AndroidKFirebaseCore.context,
+            AndroidKFirebaseMessagingChannel.getActivity(),
             0,
             intent,
             PendingIntent.FLAG_IMMUTABLE
