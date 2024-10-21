@@ -29,7 +29,7 @@ implementation("io.github.the-best-is-best:kfirebase-core:1.0.0-rc1")
 ### androidMain
 
 ```kotlin
-KAndroidFirebaseCore.initialize(this)
+AndroidKFirebaseCore.initialize(this)
 ```
 
 ## Need add this in pod file if not exist run ` pod init `
