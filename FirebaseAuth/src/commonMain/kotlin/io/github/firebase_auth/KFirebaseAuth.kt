@@ -1,52 +1,48 @@
 package io.github.firebase_auth
 
 expect class KFirebaseAuth() {
-    fun currentUser(callback: (Result<KFirebaseUser?>) -> Unit)
-    fun signInAnonymously(callback: (Result<KFirebaseUser?>) -> Unit)
-    fun createUserWithEmailAndPassword(
+    suspend fun currentUser(): Result<KFirebaseUser?>
+    suspend fun signInAnonymously(): Result<KFirebaseUser?>
+    suspend fun createUserWithEmailAndPassword(
         email: String,
-        password: String,
-        callback: (Result<KFirebaseUser?>) -> Unit
-    )
+        password: String
+    ): Result<KFirebaseUser?>
 
-    fun signInWithEmailAndPassword(
+    suspend fun signInWithEmailAndPassword(
         email: String,
-        password: String,
-        callback: (Result<KFirebaseUser?>) -> Unit
-    )
-    fun addListenerAuthStateChange(callback: (Result<KFirebaseUser?>) -> Unit)
-    fun addListenerIdTokenChanged(callback: (Result<KFirebaseUser?>) -> Unit)
-    fun confirmPasswordReset(
+        password: String
+    ): Result<KFirebaseUser?>
+
+    suspend fun addListenerAuthStateChange(): Result<KFirebaseUser?>
+    suspend fun addListenerIdTokenChanged(): Result<KFirebaseUser?>
+    suspend fun confirmPasswordReset(
         code: String,
-        newPassword: String,
-        callback: (Result<Boolean?>) -> Unit,
-    )
-    fun setLanguageCodeLocale(locale: String)
-    fun kUpdateProfile(
-        displayName: String?,
-        photoUrl: String?,
-        callback: (Result<Boolean?>) -> Unit
-    )
+        newPassword: String
+    ): Result<Boolean?>
 
-    fun signInWithCredential(
-        credential: AuthCredential,
-        callback: (Result<KFirebaseUser?>) -> Unit
-    )
+    fun setLanguageCodeLocale(locale: String)
+    suspend fun kUpdateProfile(
+        displayName: String?,
+        photoUrl: String?
+    ): Result<Boolean?>
+
+    suspend fun signInWithCredential(
+        credential: AuthCredential
+    ): Result<KFirebaseUser?>
 
     fun isLinkEmail(email: String): Boolean
     var languageCode: String?
 
-    fun applyActionWithCode(code: String, callback: (Result<Boolean?>) -> Unit)
-    fun <T : ActionCodeResult> checkActionWithCode(code: String, callback: (Result<T>) -> Unit)
+    suspend fun applyActionWithCode(code: String): Result<Boolean?>
+    suspend fun <T : ActionCodeResult> checkActionWithCode(code: String): Result<T>
 }
 
-expect fun KFirebaseUser.kUpdateEmail(email: String, callback: (Result<Boolean?>) -> Unit)
-expect fun KFirebaseUser.kSendEmailVerification(callback: (Result<Boolean?>) -> Unit)
-expect fun KFirebaseUser.kResetPassword(password: String, callback: (Result<Boolean?>) -> Unit)
-expect fun KFirebaseUser.kDelete(callback: (Result<Boolean?>) -> Unit)
-expect fun KFirebaseUser.kSignOut(callback: (Result<Boolean?>) -> Unit)
-expect fun KFirebaseUser.linkProvider(credential: AuthCredential , callback: (Result<KFirebaseUser?>) -> Unit)
-
+expect suspend fun KFirebaseUser.kUpdateEmail(email: String): Result<Boolean?>
+expect suspend fun KFirebaseUser.kSendEmailVerification(): Result<Boolean?>
+expect suspend fun KFirebaseUser.kResetPassword(password: String): Result<Boolean?>
+expect suspend fun KFirebaseUser.kDelete(): Result<Boolean?>
+expect suspend fun KFirebaseUser.kSignOut(): Result<Boolean?>
+expect suspend fun KFirebaseUser.linkProvider(credential: AuthCredential): Result<KFirebaseUser?>
 
 sealed class ActionCodeResult {
     data object SignInWithEmailLink : ActionCodeResult()
@@ -59,6 +55,7 @@ sealed class ActionCodeResult {
         val email: String,
         val previousEmail: String
     ) : ActionCodeResult()
+
     class RevertSecondFactorAddition internal constructor(
         val email: String,
         val multiFactorInfo: MultiFactorInfo?

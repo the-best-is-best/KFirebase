@@ -1,73 +1,85 @@
 package io.github.firebase_storage
 
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 actual class KFirebaseStorage {
     private val storage = FirebaseStorage.getInstance()
 
-    actual fun uploadFile(
+    actual suspend fun uploadFile(
         filePath: String,
         fileData: ByteArray,
-        callback: (Result<Pair<String?, String>>) -> Unit // Returning file URL and file path
-    ) {
-        val storageRef = storage.reference.child(filePath)
-        storageRef.putBytes(fileData)
-            .addOnSuccessListener {
-                storageRef.downloadUrl
-                    .addOnSuccessListener { url ->
-                        callback(
-                            Result.success(
-                                Pair(
-                                    url.toString(),
-                                    filePath
+        // Returning file URL and file path
+    ): Result<Pair<String?, String>> {
+        return suspendCancellableCoroutine { cont ->
+
+            val storageRef = storage.reference.child(filePath)
+            storageRef.putBytes(fileData)
+                .addOnSuccessListener {
+                    storageRef.downloadUrl
+                        .addOnSuccessListener { url ->
+                            cont.resume(
+                                Result.success(
+                                    Pair(
+                                        url.toString(),
+                                        filePath
+                                    )
                                 )
-                            )
-                        ) // Returning URL and path
-                    }
-                    .addOnFailureListener { exception ->
-                        callback(Result.failure(exception))
-                    }
-            }
-            .addOnFailureListener { exception ->
-                callback(Result.failure(exception))
-            }
+                            ) // Returning URL and path
+                        }
+                        .addOnFailureListener { exception ->
+                            cont.resume(Result.failure(exception))
+                        }
+                }
+                .addOnFailureListener { exception ->
+                    cont.resume(Result.failure(exception))
+                }
+        }
     }
 
 
-    actual fun downloadFile(
+    actual suspend fun downloadFile(
         filePath: String,
-        callback: (Result<KFirebaseStorageDownloadedFile?>) -> Unit
-    ) {
-        val storageRef = storage.reference.child(filePath)
 
-        storageRef.getBytes(Long.MAX_VALUE)
-            .addOnSuccessListener { fileBytes ->
-                val fileName = filePath.substringAfterLast('/')
-                val fileExtension = fileName.substringAfterLast('.', "")
+        ): Result<KFirebaseStorageDownloadedFile?> {
+        return suspendCancellableCoroutine { cont ->
 
-                val downloadedFile = KFirebaseStorageDownloadedFile(
-                    fileName = fileName,
-                    fileExtension = fileExtension,
-                    fileBytes = fileBytes
-                )
-                callback(Result.success(downloadedFile))
-            }
-            .addOnFailureListener { exception ->
-                callback(Result.failure(exception))
-            }
+            val storageRef = storage.reference.child(filePath)
+
+            storageRef.getBytes(Long.MAX_VALUE)
+                .addOnSuccessListener { fileBytes ->
+                    val fileName = filePath.substringAfterLast('/')
+                    val fileExtension = fileName.substringAfterLast('.', "")
+
+                    val downloadedFile = KFirebaseStorageDownloadedFile(
+                        fileName = fileName,
+                        fileExtension = fileExtension,
+                        fileBytes = fileBytes
+                    )
+                    cont.resume(Result.success(downloadedFile))
+                }
+                .addOnFailureListener { exception ->
+                    cont.resume(Result.failure(exception))
+                }
+
+        }
     }
 
 
-    actual fun deleteFile(
-        filePath: String,
-        callback: (Result<Unit>) -> Unit
-    ) {
-        val storageRef = storage.reference.child(filePath)
+    actual suspend fun deleteFile(
+        filePath: String
 
-        storageRef.delete().addOnSuccessListener {
-            callback(Result.success(Unit))
-        }.addOnFailureListener { exception ->
-            callback(Result.failure(exception))
+    ): Result<Boolean> {
+        return suspendCancellableCoroutine { cont ->
+
+            val storageRef = storage.reference.child(filePath)
+
+            storageRef.delete().addOnSuccessListener {
+                cont.resume(Result.success(true))
+            }.addOnFailureListener { exception ->
+                cont.resume(Result.failure(exception))
+            }
         }
     }
 

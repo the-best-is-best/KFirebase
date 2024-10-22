@@ -3,70 +3,59 @@ package io.github.firebase_firestore
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 actual class KFirebaseFirestore {
 
     private val firestore = FirebaseFirestore.getInstance()
 
-    // Maintain a map of listenerId to ListenerRegistration
     private val listenerRegistrations: MutableMap<String, ListenerRegistration> = mutableMapOf()
 
-    actual fun addDocument(
+    actual suspend fun addDocument(
         collection: String,
         documentId: String,
-        data: Map<String, Any?>,
-        callback: (Result<Unit>) -> Unit
-    ) {
+        data: Map<String, Any?>
+    ): Result<Boolean> = suspendCancellableCoroutine { cont ->
         try {
-            firestore.collection(collection).document(documentId).set(data).addOnSuccessListener {
-                callback(Result.success(Unit))
-            }.addOnFailureListener { exception ->
-                callback(Result.failure(exception))
-            }
+            firestore.collection(collection).document(documentId).set(data)
+                .addOnSuccessListener { cont.resume(Result.success(true)) }
+                .addOnFailureListener { exception -> cont.resumeWithException(exception) }
         } catch (e: Exception) {
-            callback(Result.failure(e))
+            cont.resumeWithException(e)
         }
     }
 
-    actual fun getDocuments(
-        collection: String,
-        callback: (Result<List<Map<String, Any?>>>) -> Unit
-    ) {
-        firestore.collection(collection).get().addOnSuccessListener { querySnapshot ->
-            val documents = querySnapshot.documents.mapNotNull { doc ->
-                try {
-                    doc.data
-                } catch (e: Exception) {
-                    null // Handle deserialization error
-                }
+    actual suspend fun getDocuments(
+        collection: String
+    ): Result<List<Map<String, Any?>>> = suspendCancellableCoroutine { cont ->
+        firestore.collection(collection).get()
+            .addOnSuccessListener { querySnapshot ->
+                val documents = querySnapshot.documents.mapNotNull { it.data }
+                cont.resume(Result.success(documents))
             }
-            callback(Result.success(documents))
-        }.addOnFailureListener { exception ->
-            callback(Result.failure(exception))
-        }
+            .addOnFailureListener { exception -> cont.resumeWithException(exception) }
     }
 
-    actual fun getDocumentById(
+    actual suspend fun getDocumentById(
         collection: String,
-        documentId: String,
-        callback: (Result<Map<String, Any?>>) -> Unit
-    ) {
+        documentId: String
+    ): Result<Map<String, Any?>> = suspendCancellableCoroutine { cont ->
         firestore.collection(collection).document(documentId).get()
             .addOnSuccessListener { document ->
                 val result = document.data
-                callback(Result.success(result!!.toMap()))
-            }.addOnFailureListener { exception ->
-                callback(Result.failure(exception))
+                cont.resume(Result.success(result ?: emptyMap()))
             }
+            .addOnFailureListener { exception -> cont.resumeWithException(exception) }
     }
 
-    actual fun queryDocuments(
+    actual suspend fun queryDocuments(
         collection: String,
         filters: List<Map<String, Comparable<*>>>,
         orderBy: String?,
-        limit: Long?,
-        callback: (Result<List<Map<String, Any?>>>) -> Unit
-    ) {
+        limit: Long?
+    ): Result<List<Map<String, Any?>>> = suspendCancellableCoroutine { cont ->
         var query: Query = firestore.collection(collection)
 
         filters.forEach { filter ->
@@ -84,7 +73,6 @@ actual class KFirebaseFirestore {
                 "array-contains" -> query = query.whereArrayContains(field, value)
                 "array-contains-any" -> if (value is List<*>) query =
                     query.whereArrayContainsAny(field, value)
-
                 "in" -> if (value is List<*>) query = query.whereIn(field, value)
                 "not-in" -> if (value is List<*>) query = query.whereNotIn(field, value)
             }
@@ -95,47 +83,38 @@ actual class KFirebaseFirestore {
 
         query.get().addOnSuccessListener { querySnapshot ->
             val documents = querySnapshot.documents.mapNotNull { it.data }
-            callback(Result.success(documents))
-        }.addOnFailureListener { exception ->
-            callback(Result.failure(exception))
-        }
+            cont.resume(Result.success(documents))
+        }.addOnFailureListener { exception -> cont.resumeWithException(exception) }
     }
 
-    actual fun updateDocument(
+    actual suspend fun updateDocument(
         collection: String,
         documentId: String,
-        data: Map<String, Any?>,
-        callback: (Result<Unit>) -> Unit
-    ) {
+        data: Map<String, Any?>
+    ): Result<Boolean> = suspendCancellableCoroutine { cont ->
         try {
-            firestore.collection(collection).document(documentId).set(data).addOnSuccessListener {
-                callback(Result.success(Unit))
-            }.addOnFailureListener { exception ->
-                callback(Result.failure(exception))
-            }
+            firestore.collection(collection).document(documentId).set(data)
+                .addOnSuccessListener { cont.resume(Result.success(true)) }
+                .addOnFailureListener { exception -> cont.resumeWithException(exception) }
         } catch (e: Exception) {
-            callback(Result.failure(e))
+            cont.resumeWithException(e)
         }
     }
 
-    actual fun deleteDocument(
+    actual suspend fun deleteDocument(
         collection: String,
-        documentId: String,
-        callback: (Result<Unit>) -> Unit
-    ) {
-        firestore.collection(collection).document(documentId).delete().addOnSuccessListener {
-            callback(Result.success(Unit))
-        }.addOnFailureListener { exception ->
-            callback(Result.failure(exception))
-        }
+        documentId: String
+    ): Result<Unit> = suspendCancellableCoroutine { cont ->
+        firestore.collection(collection).document(documentId).delete()
+            .addOnSuccessListener { cont.resume(Result.success(Unit)) }
+            .addOnFailureListener { exception -> cont.resumeWithException(exception) }
     }
 
-    actual fun batchWrite(
+    actual suspend fun batchWrite(
         addOperations: List<Pair<String, Any>>,
         updateOperations: List<Triple<String, String, Any>>,
-        deleteOperations: List<Pair<String, String>>,
-        callback: (Result<Unit>) -> Unit
-    ) {
+        deleteOperations: List<Pair<String, String>>
+    ): Result<Unit> = suspendCancellableCoroutine { cont ->
         val batch = firestore.batch()
 
         addOperations.forEach { (collection, data) ->
@@ -154,42 +133,50 @@ actual class KFirebaseFirestore {
         }
 
         batch.commit().addOnSuccessListener {
-            callback(Result.success(Unit))
-        }.addOnFailureListener { exception ->
-            callback(Result.failure(exception))
-        }
+            cont.resume(Result.success(Unit))
+        }.addOnFailureListener { exception -> cont.resumeWithException(exception) }
     }
 
-    actual fun listenToCollection(
+    actual suspend fun listenToCollection(
         collection: String,
-        listenerId: String,
-        callback: (Result<List<Map<String, Any?>>>) -> Unit
-    ) {
+        listenToCollectionId: String
+    ): Result<List<Map<String, Any?>>> = suspendCancellableCoroutine { continuation ->
+        val firestore = FirebaseFirestore.getInstance()
+
         val registration = firestore.collection(collection)
             .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
                 if (firebaseFirestoreException != null) {
-                    callback(Result.failure(firebaseFirestoreException))
+                    // Resume the coroutine with an exception
+                    continuation.resumeWithException(firebaseFirestoreException)
                     return@addSnapshotListener
                 }
 
-                val documents = querySnapshot?.documents?.map { documentSnapshot ->
-                    documentSnapshot.data ?: emptyMap<String, Any?>()
-                } ?: emptyList()
-
-                callback(Result.success(documents))
+                // Convert the documents from the snapshot to a list of maps
+                val documents =
+                    querySnapshot?.documents?.map { it.data ?: emptyMap<String, Any?>() }
+                        ?: emptyList()
+                // Resume the coroutine with the result
+                continuation.resume(Result.success(documents))
             }
 
-        // Add to listener registrations map
-        listenerRegistrations[listenerId] = registration
+        // Store the listener registration if needed for future reference
+        listenerRegistrations[listenToCollectionId] = registration
+
+        // Handle cancellation
+        continuation.invokeOnCancellation {
+            registration.remove() // Remove the listener if the coroutine is cancelled
+        }
     }
 
+
+
     actual fun stopListenerCollection(listenerId: String) {
-        listenerRegistrations[listenerId]?.remove() // Stop the listener
-        listenerRegistrations.remove(listenerId) // Remove it from the map
+        listenerRegistrations[listenerId]?.remove()
+        listenerRegistrations.remove(listenerId)
     }
 
     actual fun stopAllListeners() {
-        listenerRegistrations.values.forEach { it.remove() } // Stop all listeners
-        listenerRegistrations.clear() // Clear the map
+        listenerRegistrations.values.forEach { it.remove() }
+        listenerRegistrations.clear()
     }
 }

@@ -5,117 +5,105 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 actual class KFirebaseDatabase {
     private val database: DatabaseReference = FirebaseDatabase.getInstance().reference
     private val listenersMap = mutableMapOf<String, ValueEventListener>()
 
-    actual fun write(path: String, data: Map<String, Any>, callback: (Result<Boolean?>) -> Unit) {
-        database.child(path).setValue(data).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                callback(Result.success(true))
-            } else {
-                callback(Result.failure(task.exception ?: Exception("Unknown error")))
+    actual suspend fun write(path: String, data: Map<String, Any>): Result<Boolean?> {
+        return suspendCancellableCoroutine { cont ->
+            database.child(path).setValue(data).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    cont.resume(Result.success(true))
+                } else {
+                    cont.resumeWithException(task.exception ?: Exception("Unknown error"))
+                }
             }
         }
     }
 
-    actual fun read(path: String, callback: (Result<Any?>) -> Unit) {
-        database.child(path).get().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                callback(Result.success(task.result?.value))
-            } else {
-                callback(Result.failure(task.exception ?: Exception("Unknown error")))
+    actual suspend fun read(path: String): Result<Any?> {
+        return suspendCancellableCoroutine { cont ->
+            database.child(path).get().addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    cont.resume(Result.success(task.result?.value))
+                } else {
+                    cont.resumeWithException(task.exception ?: Exception("Unknown error"))
+                }
             }
         }
     }
 
-    actual fun writeList(path: String, dataList: List<Map<String, Any>>, callback: (Result<Boolean>) -> Unit) {
+    actual suspend fun writeList(path: String, dataList: List<Map<String, Any>>): Result<Boolean> {
         val updates = hashMapOf<String, Any>()
         dataList.forEachIndexed { index, data ->
             updates["$path/$index"] = data
         }
-        database.updateChildren(updates).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                callback(Result.success(true))
-            } else {
-                callback(Result.failure(task.exception ?: Exception("Unknown error")))
+        return suspendCancellableCoroutine { cont ->
+            database.updateChildren(updates).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    cont.resume(Result.success(true))
+                } else {
+                    cont.resumeWithException(task.exception ?: Exception("Unknown error"))
+                }
             }
         }
     }
 
-    actual fun readList(path: String, callback: (Result<List<Any?>>) -> Unit) {
-        database.child(path).get().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val dataList = task.result?.children?.map { it.value } ?: emptyList()
-                callback(Result.success(dataList))
-            } else {
-                callback(Result.failure(task.exception ?: Exception("Unknown error")))
+    actual suspend fun readList(path: String): Result<List<Any?>> {
+        return suspendCancellableCoroutine { cont ->
+            database.child(path).get().addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val dataList = task.result?.children?.map { it.value } ?: emptyList()
+                    cont.resume(Result.success(dataList))
+                } else {
+                    cont.resumeWithException(task.exception ?: Exception("Unknown error"))
+                }
             }
         }
     }
 
-    actual fun delete(
-        path: String,
-        callback: (Result<Boolean?>) -> Unit
-    ) {
-        try {
+    actual suspend fun delete(path: String): Result<Boolean?> {
+        return suspendCancellableCoroutine { cont ->
             database.child(path).removeValue().addOnCompleteListener { task ->
-                val exc = task.exception
-                val success = task.isSuccessful
-
-                if(!success){
-                    callback(Result.failure(Exception(exc)))
-                    return@addOnCompleteListener
-                }else{
-                    callback(Result.success(true))
+                if (task.isSuccessful) {
+                    cont.resume(Result.success(true))
+                } else {
+                    cont.resumeWithException(task.exception ?: Exception("Unknown error"))
                 }
             }
-
-        } catch (e:Exception){
-            callback(Result.failure(e))
         }
     }
 
-    actual fun update(
-        path: String,
-        data:Map<String, Any>,
-        callback: (Result<Boolean?>) -> Unit
-    ) {
-        try {
+    actual suspend fun update(path: String, data: Map<String, Any>): Result<Boolean?> {
+        return suspendCancellableCoroutine { cont ->
             database.child(path).updateChildren(data).addOnCompleteListener { task ->
-                 val exc = task.exception
-                val isSuccess = task.isSuccessful
-
-                if(!isSuccess){
-                    callback(Result.failure(Exception(exc)))
-                    return@addOnCompleteListener
-                }
-                else{
-                    callback(Result.success(true))
+                if (task.isSuccessful) {
+                    cont.resume(Result.success(true))
+                } else {
+                    cont.resumeWithException(task.exception ?: Exception("Unknown error"))
                 }
             }
-
-        } catch (e:Exception){
-            callback(Result.failure(e))
         }
     }
 
-    actual fun addObserveListener(
-        path: String,
-        callback: (Result<Any?>) -> Unit
-    ) {
-        val ref = database.child(path)
-        val listener = ref.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                callback(Result.success(snapshot.value))
-            }
+    actual suspend fun addObserveListener(path: String): Result<Any?> {
+        return suspendCancellableCoroutine { cont ->
+            val listener = object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    cont.resume(Result.success(snapshot.value))
+                }
 
-            override fun onCancelled(error: DatabaseError) {
-                callback(Result.failure(Exception(error.message)))
+                override fun onCancelled(error: DatabaseError) {
+                    cont.resumeWithException(Exception(error.message))
+                }
             }
-        })
-        listenersMap[path] = listener
+            database.child(path).addValueEventListener(listener)
+            listenersMap[path] = listener
+        }
     }
 
     actual fun removeObserver(path: String) {
@@ -124,5 +112,4 @@ actual class KFirebaseDatabase {
             database.child(path).removeEventListener(listener)
         }
     }
-
 }

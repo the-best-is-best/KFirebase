@@ -1,24 +1,23 @@
 package io.github.firebase_auth
 
 import cocoapods.FirebaseAuth.FIRActionCodeOperationEmailLink
+import cocoapods.FirebaseAuth.FIRActionCodeOperationPasswordReset
 import cocoapods.FirebaseAuth.FIRActionCodeOperationRecoverEmail
 import cocoapods.FirebaseAuth.FIRActionCodeOperationUnknown
 import cocoapods.FirebaseAuth.FIRActionCodeOperationVerifyAndChangeEmail
 import cocoapods.FirebaseAuth.FIRActionCodeOperationVerifyEmail
 import cocoapods.FirebaseAuth.FIRAuth
-import cocoapods.FirebaseAuth.FIRAuthDataResult
 import cocoapods.FirebaseAuth.FIRUser
 import io.github.firebase_auth.KFirebaseAuth.Companion.currentUser
-import kotlinx.cinterop.BetaInteropApi
-import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCObjectVar
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
-import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.Foundation.NSError
 import platform.Foundation.NSURL
+import kotlin.coroutines.resume
 
 actual class KFirebaseAuth {
     companion object {
@@ -28,184 +27,153 @@ actual class KFirebaseAuth {
     internal var ios: FIRAuth = FIRAuth.auth()
 
     init {
-        currentUser = FIRAuth.auth().currentUser()
-        println("user data is $currentUser")
+        currentUser = ios.currentUser()
     }
 
-    actual fun currentUser(callback: (Result<KFirebaseUser?>) -> Unit) {
-
-        if (currentUser == null) {
-            try {
-                val fireUser = ios.currentUser()
-                if (fireUser != null) {
-                    currentUser = fireUser
-                    callback(Result.success(fireUser.toModel()))
-
-                } else {
-                    callback(Result.success(null))
-                }
-            } catch (e: Exception) {
-                callback(Result.failure(e))
-            }
-        } else {
-            callback(Result.success(currentUser!!.toModel()))
-        }
-        println("user data is $currentUser")
-
-
-    }
-
-    actual fun createUserWithEmailAndPassword(
-        email: String,
-        password: String,
-        callback: (Result<KFirebaseUser?>) -> Unit
-    ) {
-        ios.createUserWithEmail(email, password) { authResult, error ->
-            if (error != null) {
-                callback(Result.failure(error.convertNSErrorToException()))
-                return@createUserWithEmail
-            }
-            val userData = authResult?.user()
-            if (userData != null) {
-                currentUser = userData
-
-               callback( Result.success(userData.toModel()))
+    actual suspend fun currentUser(): Result<KFirebaseUser?> {
+        return try {
+            val fireUser = ios.currentUser()
+            if (fireUser != null) {
+                currentUser = fireUser
+                Result.success(fireUser.toModel())
             } else {
-                callback(    Result.success(null))
+                Result.success(null)
             }
-
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
-    actual fun signInAnonymously(callback: (Result<KFirebaseUser?>) -> Unit) {
-        ios.signInAnonymouslyWithCompletion { authResult, nsError ->
-            if (nsError != null) {
-                println("auth signInAnonymously error ${nsError}")
-                callback(Result.failure(nsError.convertNSErrorToException()))
-                return@signInAnonymouslyWithCompletion
-            }
-            val userData = authResult?.user()
-            if (userData != null) {
-                currentUser = userData
-                callback(Result.success(userData.toModel()))
-
-            } else {
-
-                callback(Result.success(null))
-            }
-        }
-    }
-
-    actual fun signInWithEmailAndPassword(
-        email: String,
-        password: String,
-        callback: (Result<KFirebaseUser?>) -> Unit
-    ) {
-
-        ios.signInWithEmail(
-            email = email,
-            password = password,
-            completion = { authResult: FIRAuthDataResult?, error: NSError? ->
+    actual suspend fun signInAnonymously(): Result<KFirebaseUser?> {
+        return suspendCancellableCoroutine { continuation ->
+            ios.signInAnonymouslyWithCompletion { authResult, error ->
                 if (error != null) {
-                    println("auth error $error")
-                    callback(Result.failure(error.convertNSErrorToException()))
-                    return@signInWithEmail
-                }
-                val userData = authResult?.user()
-                if (userData != null) {
-                    currentUser = userData
-                    callback(Result.success(userData.toModel()))
+                    continuation.resume(Result.failure(error.convertNSErrorToException()))
                 } else {
-                    callback(Result.success(null))
+                    val userData = authResult?.user()
+                    currentUser = userData
+                    continuation.resume(Result.success(userData?.toModel()))
                 }
-            })
+            }
+        }
+    }
+
+    actual suspend fun createUserWithEmailAndPassword(
+        email: String,
+        password: String
+    ): Result<KFirebaseUser?> {
+        return suspendCancellableCoroutine { continuation ->
+            ios.createUserWithEmail(email, password) { authResult, error ->
+                if (error != null) {
+                    continuation.resume(Result.failure(error.convertNSErrorToException()))
+                } else {
+                    val userData = authResult?.user()
+                    currentUser = userData
+                    continuation.resume(Result.success(userData?.toModel()))
+                }
+            }
+        }
+    }
+
+    actual suspend fun signInWithEmailAndPassword(
+        email: String,
+        password: String
+    ): Result<KFirebaseUser?> {
+        return suspendCancellableCoroutine { continuation ->
+            ios.signInWithEmail(email, password) { authResult, error ->
+                if (error != null) {
+                    continuation.resume(Result.failure(error.convertNSErrorToException()))
+                } else {
+                    val userData = authResult?.user()
+                    currentUser = userData
+                    continuation.resume(Result.success(userData?.toModel()))
+                }
+            }
+        }
+    }
+
+    actual suspend fun addListenerAuthStateChange(): Result<KFirebaseUser?> {
+        return suspendCancellableCoroutine { continuation ->
+            ios.addAuthStateDidChangeListener { _, authUser ->
+                if (authUser != null) {
+                    continuation.resume(Result.success(authUser.toModel()))
+                } else {
+                    continuation.resume(Result.success(null))
+                }
+            }
+        }
+    }
+
+    actual suspend fun addListenerIdTokenChanged(): Result<KFirebaseUser?> {
+        return suspendCancellableCoroutine { continuation ->
+            ios.addIDTokenDidChangeListener { _, authUser ->
+                if (authUser != null) {
+                    continuation.resume(Result.success(authUser.toModel()))
+                } else {
+                    continuation.resume(Result.success(null))
+                }
+            }
+        }
+    }
+
+    actual suspend fun confirmPasswordReset(
+        code: String,
+        newPassword: String
+    ): Result<Boolean?> {
+        return suspendCancellableCoroutine { continuation ->
+            ios.confirmPasswordResetWithCode(code, newPassword) { error ->
+                if (error != null) {
+                    continuation.resume(Result.failure(error.convertNSErrorToException()))
+                } else {
+                    continuation.resume(Result.success(true))
+                }
+            }
+        }
     }
 
     actual fun setLanguageCodeLocale(locale: String) {
         ios.setLanguageCode(locale)
     }
 
-    actual fun kUpdateProfile(
+    actual suspend fun kUpdateProfile(
         displayName: String?,
-        photoUrl: String?,
-        callback: (Result<Boolean?>) -> Unit
-    ) {
-        try {
-            // Create a profile change request
-            currentUser = FIRAuth.auth().currentUser()
-            currentUser!!.apply {
-                setDisplayName(displayName ?: currentUser!!.displayName())
-                if (photoUrl != null) {
-                    setPhotoURL(NSURL.URLWithString(photoUrl))
+        photoUrl: String?
+    ): Result<Boolean?> {
+        return try {
+            val user = currentUser ?: return Result.failure(Exception("No current user"))
+            user.setDisplayName(displayName)
+            if (photoUrl != null) {
+                user.setPhotoURL(NSURL.URLWithString(photoUrl))
+            }
+            suspendCancellableCoroutine { continuation ->
+                ios.updateCurrentUser(user) { error ->
+                    if (error != null) {
+                        continuation.resume(Result.failure(error.convertNSErrorToException()))
+                    } else {
+                        continuation.resume(Result.success(true))
+                    }
                 }
             }
-            ios.updateCurrentUser(currentUser) { error ->
-                if (error != null) {
-                    callback(Result.failure(error.convertNSErrorToException()))
-                    return@updateCurrentUser
-                }
-                callback(Result.success(true))
-            }
-
-
         } catch (e: Exception) {
-            callback(Result.failure(e))
-
+            Result.failure(e)
         }
-
     }
 
-    actual fun signInWithCredential(
-        credential: AuthCredential,
-        callback: (Result<KFirebaseUser?>) -> Unit
-    ) {
-        ios.signInWithCredential(credential.ios) { authDataResult, error ->
-            if (error != null) {
-                callback(Result.failure(error.convertNSErrorToException()))
-            } else {
-                // Handle successful sign-in
-                val user = authDataResult?.user()
-                callback(Result.success(user?.toModel()))
+    actual suspend fun signInWithCredential(credential: AuthCredential): Result<KFirebaseUser?> {
+        return suspendCancellableCoroutine { continuation ->
+            ios.signInWithCredential(credential.ios) { authDataResult, error ->
+                if (error != null) {
+                    continuation.resume(Result.failure(error.convertNSErrorToException()))
+                } else {
+                    val user = authDataResult?.user()
+                    continuation.resume(Result.success(user?.toModel()))
+                }
             }
         }
     }
 
-    actual fun isLinkEmail(email: String):Boolean{
-       return ios.isSignInWithEmailLink(email)
-    }
-
-    actual fun confirmPasswordReset(
-        code: String,
-        newPassword: String,
-        callback: (Result<Boolean?>) -> Unit
-    ) {
-        ios.confirmPasswordResetWithCode(code, newPassword) { error ->
-            if (error != null) {
-                callback(Result.failure(error.convertNSErrorToException()))
-                return@confirmPasswordResetWithCode
-            }
-            callback(Result.success(true))
-        }
-    }
-
-    actual fun addListenerAuthStateChange(callback: (Result<KFirebaseUser?>) -> Unit) {
-        ios.addAuthStateDidChangeListener(listener = { _: FIRAuth?, authUser: FIRUser? ->
-            if (authUser != null) {
-                callback(Result.success(authUser.toModel()))
-                return@addAuthStateDidChangeListener
-            }
-            callback(Result.success(null))
-        })
-    }
-
-    actual fun addListenerIdTokenChanged(callback: (Result<KFirebaseUser?>) -> Unit) {
-        ios.addIDTokenDidChangeListener(listener = { _: FIRAuth?, authUser: FIRUser? ->
-            if (authUser != null) {
-                callback(Result.success(authUser.toModel()))
-                return@addIDTokenDidChangeListener
-            }
-            callback(Result.success(null))
-        })
+    actual fun isLinkEmail(email: String): Boolean {
+        return ios.isSignInWithEmailLink(email)
     }
 
     actual var languageCode: String?
@@ -214,155 +182,105 @@ actual class KFirebaseAuth {
             setLanguageCodeLocale(value!!)
         }
 
-    actual fun applyActionWithCode(
-        code: String,
-        callback: (Result<Boolean?>) -> Unit
-    ) {
-        ios.applyActionCode(code) { error ->
+    actual suspend fun applyActionWithCode(code: String): Result<Boolean?> {
+        return suspendCancellableCoroutine { continuation ->
+            ios.applyActionCode(code) { error ->
+                if (error != null) {
+                    continuation.resume(Result.failure(error.convertNSErrorToException()))
+                } else {
+                    continuation.resume(Result.success(true))
+                }
+            }
+        }
+    }
+
+    actual suspend fun <T : ActionCodeResult> checkActionWithCode(code: String): Result<T> {
+        return suspendCancellableCoroutine { continuation ->
+            ios.checkActionCode(code) { result, error ->
+                if (error != null) {
+                    continuation.resume(Result.failure(error.convertNSErrorToException()))
+                } else if (result != null) {
+                    val resOptions = when (result.operation()) {
+                        FIRActionCodeOperationEmailLink -> ActionCodeResult.SignInWithEmailLink
+                        FIRActionCodeOperationVerifyEmail -> ActionCodeResult.VerifyEmail(result.email())
+                        FIRActionCodeOperationRecoverEmail -> ActionCodeResult.RecoverEmail(
+                            result.email(),
+                            result.previousEmail()!!
+                        )
+
+                        FIRActionCodeOperationPasswordReset -> ActionCodeResult.PasswordReset(
+                            result.email()
+                        )
+
+                        FIRActionCodeOperationVerifyAndChangeEmail -> ActionCodeResult.VerifyBeforeChangeEmail(
+                            result.email(),
+                            result.previousEmail()!!
+                        )
+
+                        FIRActionCodeOperationUnknown -> throw UnsupportedOperationException(
+                            result.operation().toString()
+                        )
+
+                        else -> throw UnsupportedOperationException(result.operation().toString())
+                    } as T
+                    continuation.resume(Result.success(resOptions))
+                } else {
+                    continuation.resume(Result.failure(Exception("operation is null")))
+                }
+            }
+        }
+    }
+}
+
+actual suspend fun KFirebaseUser.kUpdateEmail(email: String): Result<Boolean?> {
+    return suspendCancellableCoroutine { continuation ->
+        currentUser?.updateEmail(email) { error ->
             if (error != null) {
-                callback(Result.failure(error.convertNSErrorToException()))
-                return@applyActionCode
+                continuation.resume(Result.failure(error.convertNSErrorToException()))
+            } else {
+                continuation.resume(Result.success(true))
             }
-            callback(Result.success(true))
-
         }
     }
+}
 
-    actual fun <T : ActionCodeResult> checkActionWithCode(
-        code: String,
-        callback: (Result<T>) -> Unit
-    ) {
-        ios.checkActionCode(code, { result, error ->
+actual suspend fun KFirebaseUser.kSendEmailVerification(): Result<Boolean?> {
+    return suspendCancellableCoroutine { continuation ->
+        currentUser?.sendEmailVerificationWithCompletion { error ->
             if (error != null) {
-                callback(Result.failure(error.convertNSErrorToException()))
-                return@checkActionCode
+                continuation.resume(Result.failure(error.convertNSErrorToException()))
+            } else {
+                continuation.resume(Result.success(true))
             }
-            if (result == null) {
-                callback(Result.failure(Exception("operation is null")))
-                return@checkActionCode
-            }
-            val resOptions = when (result.operation()) {
-                FIRActionCodeOperationEmailLink -> ActionCodeResult.SignInWithEmailLink
-                FIRActionCodeOperationVerifyEmail -> ActionCodeResult.VerifyEmail(result.email())
-                FIRActionCodeOperationRecoverEmail -> ActionCodeResult.RecoverEmail(
-                    result.email(),
-                    result.previousEmail()!!
-                )
-
-                FIRActionCodeOperationVerifyAndChangeEmail -> ActionCodeResult.VerifyBeforeChangeEmail(
-                    result.email(),
-                    result.previousEmail()!!
-                )
-                // FIRActionCodeOperationRevertSecondFactorAddition ->ActionCodeResult.RevertSecondFactorAddition(result.email(), null)
-                FIRActionCodeOperationUnknown -> throw UnsupportedOperationException(
-                    result.operation().toString()
-                )
-
-                else -> throw UnsupportedOperationException(result.operation().toString())
-            } as T
-
-            callback(Result.success(resOptions))
-
-        })
-
-
-    }
-}
-
-internal suspend inline fun <T, reified R> T.awaitResult(function: T.(callback: (R?, NSError?) -> Unit) -> Unit): R {
-    val job = CompletableDeferred<R?>()
-    function { result, error ->
-        if (error == null) {
-            job.complete(result)
-        } else {
-            job.completeExceptionally(error.convertNSErrorToException())
         }
     }
-    return job.await() as R
 }
 
-
-actual fun KFirebaseUser.kUpdateEmail(email: String, callback: (Result<Boolean?>) -> Unit) {
-    currentUser?.updateEmail(email) { error ->
-        try {
+actual suspend fun KFirebaseUser.kResetPassword(password: String): Result<Boolean?> {
+    return suspendCancellableCoroutine { continuation ->
+        currentUser?.updatePassword(password) { error ->
             if (error != null) {
-                callback(Result.failure(error.convertNSErrorToException()))
-                return@updateEmail
+                continuation.resume(Result.failure(error.convertNSErrorToException()))
+            } else {
+                continuation.resume(Result.success(true))
             }
-            callback(Result.success(true))
-
-        } catch (e: Exception) {
-            callback(Result.failure(e))
-
         }
     }
 }
 
-
-actual fun KFirebaseUser.kSendEmailVerification(callback: (Result<Boolean?>) -> Unit) {
-    val sent = currentUser?.emailVerified()
-    callback(Result.success(sent))
-}
-
-
-actual fun KFirebaseUser.kResetPassword(password: String, callback: (Result<Boolean?>) -> Unit) {
-    currentUser?.updatePassword(password) { error ->
-        try {
+actual suspend fun KFirebaseUser.kDelete(): Result<Boolean?> {
+    return suspendCancellableCoroutine { continuation ->
+        currentUser?.deleteWithCompletion { error ->
             if (error != null) {
-                callback(Result.failure(error.convertNSErrorToException()))
-                return@updatePassword
+                continuation.resume(Result.failure(error.convertNSErrorToException()))
+            } else {
+                continuation.resume(Result.success(true))
             }
-            callback(Result.success(true))
-
-        } catch (e: Exception) {
-            callback(Result.failure(e))
-
         }
     }
 }
 
-
-actual fun KFirebaseUser.linkProvider(credential: AuthCredential,callback: (Result<KFirebaseUser?>) -> Unit
-){
-    currentUser?.linkWithCredential(credential.ios){authResult , error ->
-        if(error != null){
-            callback(Result.failure(error.convertNSErrorToException()))
-            return@linkWithCredential
-        }
-        if(authResult != null) {
-            currentUser = authResult.user()
-            callback(Result.success(currentUser!!.toModel()))
-        }else{
-            callback(Result.success(null))
-        }
-
-
-    }
-}
-
-
-actual fun KFirebaseUser.kDelete(callback: (Result<Boolean?>) -> Unit) {
-
-    currentUser?.deleteWithCompletion { error ->
-        try {
-            if (error != null) {
-
-                callback(Result.failure(error.convertNSErrorToException()))
-                return@deleteWithCompletion
-            }
-            currentUser = null
-            callback(Result.success(true))
-
-        } catch (e: Exception) {
-            callback(Result.failure(e))
-
-        }
-    }
-
-}
-
-@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-actual fun KFirebaseUser.kSignOut(callback: (Result<Boolean?>) -> Unit) {
+actual suspend fun KFirebaseUser.kSignOut(): Result<Boolean?> {
     memScoped {
         val error = alloc<ObjCObjectVar<NSError?>>()
 
@@ -371,22 +289,25 @@ actual fun KFirebaseUser.kSignOut(callback: (Result<Boolean?>) -> Unit) {
 
         if (signOutSuccessful) {
             currentUser = null
-            callback(Result.success(true)) // Sign out was successful
+            return Result.success(true) // Sign out was successful
         } else {
             // Handle sign out error
             val errorMessage = error.value?.localizedDescription ?: "Unknown error"
-            callback(Result.failure(Exception(errorMessage))) // Pass the error to the callback
+            return Result.failure(Exception(errorMessage)) // Pass the error to the callback
         }
+
     }
 }
 
-actual class MultiFactorInfo(private val ios: cocoapods.FirebaseAuth.FIRMultiFactorInfo) {
-    actual val displayName: String?
-        get() = ios.displayName()
-    actual val enrollmentTime: Double?
-        get() = ios.enrollmentDate().timeIntervalSinceReferenceDate
-    actual val factorId: String
-        get() = ios.factorID()
-    actual val uid: String
-        get() = ios.UID()
+actual suspend fun KFirebaseUser.linkProvider(credential: AuthCredential): Result<KFirebaseUser?> {
+    return suspendCancellableCoroutine { continuation ->
+        currentUser?.linkWithCredential(credential.ios) { authDataResult, error ->
+            if (error != null) {
+                continuation.resume(Result.failure(error.convertNSErrorToException()))
+            } else {
+                val user = authDataResult?.user()
+                continuation.resume(Result.success(user?.toModel()))
+            }
+        }
+    }
 }

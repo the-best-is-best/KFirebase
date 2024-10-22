@@ -5,45 +5,46 @@ import cocoapods.FirebaseDatabase.FIRDataSnapshot
 import cocoapods.FirebaseDatabase.FIRDatabase
 import cocoapods.FirebaseDatabase.FIRDatabaseHandle
 import cocoapods.FirebaseDatabase.FIRDatabaseReference
+import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.Foundation.NSError
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 // Class to handle Firebase Database operations
 actual class KFirebaseDatabase {
     private val databaseRef: FIRDatabaseReference = FIRDatabase.database().reference()
-    private val listenersMap = mutableMapOf<String,
-            FIRDatabaseHandle>()
+    private val listenersMap = mutableMapOf<String, FIRDatabaseHandle>()
 
-    actual fun write(
+    actual suspend fun write(
         path: String,
-        data: Map<String, Any>,
-        callback: (Result<Boolean?>) -> Unit
-    ) {
+        data: Map<String, Any>
+    ): Result<Boolean?> = suspendCancellableCoroutine { continuation ->
         val ref = databaseRef.child(path)
         ref.setValue(data) { error: NSError?, _ ->
             if (error != null) {
-                callback(Result.failure(error.convertNSErrorToException()))
+                continuation.resumeWithException(error.convertNSErrorToException())
             } else {
-                callback(Result.success(true))
+                continuation.resume(Result.success(true))
             }
         }
     }
 
-    actual fun read(path: String, callback: (Result<Any?>) -> Unit) {
+    actual suspend fun read(path: String): Result<Any?> =
+        suspendCancellableCoroutine { continuation ->
         val ref = databaseRef.child(path)
         ref.observeSingleEventOfType(FIRDataEventType.FIRDataEventTypeValue) { snapshot: FIRDataSnapshot?, error: String? ->
             if (error != null) {
-                callback(Result.failure(FirebaseDatabaseException("Error reading data: $error")))
+                continuation.resumeWithException(FirebaseDatabaseException("Error reading data: $error"))
             } else {
-                callback(Result.success(snapshot?.value))
+                continuation.resume(Result.success(snapshot?.value))
             }
         }
     }
 
-    actual fun writeList(
+    actual suspend fun writeList(
         path: String,
-        dataList: List<Map<String, Any>>,
-        callback: (Result<Boolean>) -> Unit
-    ) {
+        dataList: List<Map<String, Any>>
+    ): Result<Boolean> = suspendCancellableCoroutine { continuation ->
         val updates = mutableMapOf<String, Any>()
         dataList.forEachIndexed { index, data ->
             updates["$path/$index"] = data
@@ -51,21 +52,19 @@ actual class KFirebaseDatabase {
 
         databaseRef.updateChildValues(convertMutableMapToMap(updates)) { error: NSError?, _ ->
             if (error != null) {
-                callback(Result.failure(error.convertNSErrorToException()))
+                continuation.resumeWithException(error.convertNSErrorToException())
             } else {
-                callback(Result.success(true))
+                continuation.resume(Result.success(true))
             }
         }
     }
 
-    actual fun readList(
-        path: String,
-        callback: (Result<List<Any?>>) -> Unit
-    ) {
+    actual suspend fun readList(path: String): Result<List<Any?>> =
+        suspendCancellableCoroutine { continuation ->
         val ref = databaseRef.child(path)
         ref.observeSingleEventOfType(FIRDataEventType.FIRDataEventTypeValue) { snapshot: FIRDataSnapshot?, error: String? ->
             if (error != null) {
-                callback(Result.failure(FirebaseDatabaseException("Error reading list: $error")))
+                continuation.resumeWithException(FirebaseDatabaseException("Error reading list: $error"))
             } else {
                 val dataList = mutableListOf<Any?>()
                 val children = snapshot?.children // This returns NSEnumerator
@@ -77,52 +76,45 @@ actual class KFirebaseDatabase {
                         dataList.add(childSnapshot.value)
                     }
                 }
-                callback(Result.success(dataList))
+                continuation.resume(Result.success(dataList))
             }
         }
     }
 
-    actual fun delete(
-        path: String,
-        callback: (Result<Boolean?>) -> Unit
-    ) {
-        try {
-            databaseRef.child(path).removeValue()
-
-        }catch (e:Exception){
-            callback(Result.failure(e))
-        }
-    }
-
-    actual fun update(
-        path: String,
-        data: Map<String, Any>,
-        callback: (Result<Boolean?>) -> Unit
-    ) {
-        databaseRef.child(path).updateChildValues(convertToAnyKeyMap(data)){ error , _ ->
-           if(error != null){
-               callback(Result.failure(error.convertNSErrorToException()))
-               return@updateChildValues
-           }
-            else {
-                callback(Result.success(true))
-           }
-        }
-    }
-
-    actual fun addObserveListener(
-        path: String,
-        callback: (Result<Any?>) -> Unit
-    ) {
-        val ref = databaseRef.child(path)
-        val handle =
-            ref.observeEventType(FIRDataEventType.FIRDataEventTypeValue) { snapshot, error ->
+    actual suspend fun delete(path: String): Result<Boolean?> =
+        suspendCancellableCoroutine { continuation ->
+            val ref = databaseRef.child(path)
+            ref.removeValueWithCompletionBlock { error: NSError?, _ ->
                 if (error != null) {
-                    callback(Result.failure(FirebaseDatabaseException(error)))
+                    continuation.resumeWithException(error.convertNSErrorToException())
                 } else {
-                    callback(Result.success(snapshot?.value))
+                    continuation.resume(Result.success(true))
                 }
-            }
+        }
+    }
+
+    actual suspend fun update(path: String, data: Map<String, Any>): Result<Boolean?> =
+        suspendCancellableCoroutine { continuation ->
+            databaseRef.child(path).updateChildValues(convertToAnyKeyMap(data)) { error, _ ->
+                if (error != null) {
+                    continuation.resumeWithException(error.convertNSErrorToException())
+                } else {
+                    continuation.resume(Result.success(true))
+                }
+        }
+    }
+
+    actual suspend fun addObserveListener(path: String): Result<Any?> =
+        suspendCancellableCoroutine { continuation ->
+        val ref = databaseRef.child(path)
+            val handle =
+                ref.observeEventType(FIRDataEventType.FIRDataEventTypeValue) { snapshot, error ->
+                    if (error != null) {
+                        continuation.resumeWithException(FirebaseDatabaseException(error))
+                    } else {
+                        continuation.resume(Result.success(snapshot?.value))
+                    }
+                }
         listenersMap[path] = handle
     }
 
@@ -144,6 +136,7 @@ fun NSError.convertNSErrorToException(): Exception {
 
 // Custom Exception class for Firebase Database errors
 class FirebaseDatabaseException(message: String?, cause: Throwable? = null) : Exception(message, cause)
+
 
 fun convertMutableMapToMap(mutableMap: MutableMap<String, Any>): Map<Any?, *> {
     return mutableMap.mapKeys { it.key } // Convert keys to Any?

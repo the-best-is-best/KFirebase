@@ -10,6 +10,8 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.github.kpermissions.enum.EnumAppPermission
 import io.github.kpermissions.handler.PermissionHandler
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 object KFirebaseMessagingImpl : KFirebaseMessaging {
     private var tokenListener: ((Result<String?>) -> Unit)? = null
@@ -28,46 +30,62 @@ object KFirebaseMessagingImpl : KFirebaseMessaging {
         notificationClickedListener = callback
     }
 
-    override fun requestAuthorization(callback: (Result<Boolean>) -> Unit) {
-        val permission = PermissionHandler()
-        permission.requestPermission(EnumAppPermission.NOTIFICATION) { granted ->
-            if (!granted) {
-                permission.openAppSettings()
-            }
-            callback(Result.success(granted))
-        }
-    }
+    override suspend fun requestAuthorization(): Result<Boolean> {
+        return suspendCancellableCoroutine { cont ->
 
-    override fun getToken(callback: (Result<String?>) -> Unit) {
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                callback(Result.success(task.result))
-            } else {
-                callback(Result.failure(task.exception ?: Exception("Failed to get token")))
+            val permission = PermissionHandler()
+            permission.requestPermission(EnumAppPermission.NOTIFICATION) { granted ->
+                if (!granted) {
+                    permission.openAppSettings()
+                }
+                cont.resume(Result.success(granted))
             }
         }
     }
 
-    override fun subscribeTopic(name: String, callback: (Result<Boolean>) -> Unit) {
-        FirebaseMessaging.getInstance().subscribeToTopic(name)
-            .addOnCompleteListener { task ->
+    override suspend fun getToken(): Result<String?> {
+        return suspendCancellableCoroutine { cont ->
+
+            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    callback(Result.success(true))
+                    cont.resume(Result.success(task.result))
                 } else {
-                    callback(Result.failure(Exception(task.exception)))
+                    cont.resumeWith(
+                        Result.failure(
+                            task.exception ?: Exception("Failed to get token")
+                        )
+                    )
                 }
             }
+        }
     }
 
-    override fun unsubscribeTopic(name: String, callback: (Result<Boolean>) -> Unit) {
-        FirebaseMessaging.getInstance().unsubscribeFromTopic(name)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    callback(Result.success(true))
-                } else {
-                    callback(Result.failure(Exception(task.exception)))
+    override suspend fun subscribeTopic(name: String): Result<Boolean> {
+        return suspendCancellableCoroutine { cont ->
+
+            FirebaseMessaging.getInstance().subscribeToTopic(name)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        cont.resume(Result.success(true))
+                    } else {
+                        cont.resume(Result.failure(Exception(task.exception)))
+                    }
                 }
-            }
+        }
+    }
+
+    override suspend fun unsubscribeTopic(name: String): Result<Boolean> {
+        return suspendCancellableCoroutine { cont ->
+
+            FirebaseMessaging.getInstance().unsubscribeFromTopic(name)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        cont.resume(Result.success(true))
+                    } else {
+                        cont.resume(Result.failure(Exception(task.exception)))
+                    }
+                }
+        }
     }
 
     internal fun notifyTokenRefreshed(newToken: String) {

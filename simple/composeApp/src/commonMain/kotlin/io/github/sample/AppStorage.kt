@@ -72,11 +72,12 @@ internal fun AppStorage() = AppTheme {
                     if (selectedFile != null) {
                         scope.launch {
                             val bytes = selectedFile!!.readBytes()
-                            storage.uploadFile("$path/${selectedFile!!.name}", bytes) {
-                                it.onSuccess { (url, filePath) ->
-                                    imageUploadedPath = filePath
-                                }
+                            val res = storage.uploadFile("$path/${selectedFile!!.name}", bytes)
+                            res.onSuccess { (url, filePath) ->
+                                imageUploadedPath = filePath
                             }
+
+
                         }
                     }
 
@@ -90,24 +91,24 @@ internal fun AppStorage() = AppTheme {
 
                 onClick = {
                     if (imageUploadedPath != null) {
-                        storage.downloadFile(imageUploadedPath!!) {
-                            it.onSuccess {
-                                scope.launch {
-
-                                    println("Size downloaded ${it?.fileBytes?.size}")
-                                    val supported = FileKit.isSaveFileWithoutBytesSupported()
-                                    println("support save $supported")
-                                    if (supported && it != null) {
-                                        val fileSaved = FileKit.saveFile(
-                                            it.fileBytes,
-                                            extension = it.fileExtension,
-                                            baseName = it.fileName
-                                        )
-                                        println("file saved path is ${fileSaved?.path}")
-                                    }
+                        scope.launch {
+                            val res = storage.downloadFile(imageUploadedPath!!)
+                            res.onSuccess {
+                                println("Size downloaded ${it?.fileBytes?.size}")
+                                val supported = FileKit.isSaveFileWithoutBytesSupported()
+                                println("support save $supported")
+                                if (supported && it != null) {
+                                    val fileSaved = FileKit.saveFile(
+                                        it.fileBytes,
+                                        extension = it.fileExtension,
+                                        baseName = it.fileName
+                                    )
+                                    println("file saved path is ${fileSaved?.path}")
                                 }
                             }
                         }
+
+
                     }
                 }) {
                 Text("Download image")
@@ -117,17 +118,18 @@ internal fun AppStorage() = AppTheme {
             ElevatedButton(
                 onClick = {
                     if (imageUploadedPath != null) {
-
-                        storage.deleteFile(imageUploadedPath!!) {
-                            println("image path ${imageUploadedPath}")
-                            it.onSuccess {
+                        scope.launch {
+                            val res = storage.deleteFile(imageUploadedPath!!)
+                            res.onSuccess {
                                 println("deleted file")
                                 imageUploadedPath = null
                             }
-                            it.onFailure {
+                            res.onFailure {
                                 println("error delete $it")
+
                             }
                         }
+
 
                     }
                 }) {
