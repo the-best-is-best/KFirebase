@@ -1,12 +1,13 @@
 package io.github.firebase_auth
 
 import cocoapods.FirebaseAuth.FIRActionCodeOperationEmailLink
-import cocoapods.FirebaseAuth.FIRActionCodeOperationPasswordReset
 import cocoapods.FirebaseAuth.FIRActionCodeOperationRecoverEmail
+import cocoapods.FirebaseAuth.FIRActionCodeOperationRevertSecondFactorAddition
 import cocoapods.FirebaseAuth.FIRActionCodeOperationUnknown
 import cocoapods.FirebaseAuth.FIRActionCodeOperationVerifyAndChangeEmail
 import cocoapods.FirebaseAuth.FIRActionCodeOperationVerifyEmail
 import cocoapods.FirebaseAuth.FIRAuth
+import cocoapods.FirebaseAuth.FIRAuthDataResult
 import cocoapods.FirebaseAuth.FIRUser
 import io.github.firebase_auth.KFirebaseAuth.Companion.currentUser
 import kotlinx.cinterop.ObjCObjectVar
@@ -14,6 +15,7 @@ import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.Foundation.NSError
 import platform.Foundation.NSURL
@@ -80,15 +82,19 @@ actual class KFirebaseAuth {
         password: String
     ): Result<KFirebaseUser?> {
         return suspendCancellableCoroutine { continuation ->
-            ios.signInWithEmail(email, password) { authResult, error ->
-                if (error != null) {
-                    continuation.resume(Result.failure(error.convertNSErrorToException()))
-                } else {
-                    val userData = authResult?.user()
-                    currentUser = userData
-                    continuation.resume(Result.success(userData?.toModel()))
-                }
-            }
+            ios.signInWithEmail(
+                email = email,
+                password = password,
+                completion = { authResult: FIRAuthDataResult?, error: NSError? ->
+                    if (error != null) {
+                        continuation.resume(Result.failure(error.convertNSErrorToException()))
+                    } else {
+                        val userData = authResult?.user()
+                        currentUser = userData
+                        continuation.resume(Result.success(userData?.toModel()))
+                    }
+                })
+
         }
     }
 
@@ -207,16 +213,16 @@ actual class KFirebaseAuth {
                             result.email(),
                             result.previousEmail()!!
                         )
-
-                        FIRActionCodeOperationPasswordReset -> ActionCodeResult.PasswordReset(
-                            result.email()
+                        FIRActionCodeOperationRevertSecondFactorAddition -> ActionCodeResult.RevertSecondFactorAddition(
+                            result.email(),
+                            null
                         )
 
                         FIRActionCodeOperationVerifyAndChangeEmail -> ActionCodeResult.VerifyBeforeChangeEmail(
                             result.email(),
                             result.previousEmail()!!
                         )
-
+                        // FIRActionCodeOperationRevertSecondFactorAddition ->ActionCodeResult.RevertSecondFactorAddition(result.email(), null)
                         FIRActionCodeOperationUnknown -> throw UnsupportedOperationException(
                             result.operation().toString()
                         )
@@ -230,6 +236,19 @@ actual class KFirebaseAuth {
             }
         }
     }
+
+}
+
+internal suspend inline fun <T, reified R> T.awaitResult(function: T.(callback: (R?, NSError?) -> Unit) -> Unit): R {
+    val job = CompletableDeferred<R?>()
+    function { result, error ->
+        if (error == null) {
+            job.complete(result)
+        } else {
+            job.completeExceptionally(error.convertNSErrorToException())
+        }
+    }
+    return job.await() as R
 }
 
 actual suspend fun KFirebaseUser.kUpdateEmail(email: String): Result<Boolean?> {
@@ -242,6 +261,7 @@ actual suspend fun KFirebaseUser.kUpdateEmail(email: String): Result<Boolean?> {
             }
         }
     }
+
 }
 
 actual suspend fun KFirebaseUser.kSendEmailVerification(): Result<Boolean?> {
@@ -278,6 +298,7 @@ actual suspend fun KFirebaseUser.kDelete(): Result<Boolean?> {
             }
         }
     }
+
 }
 
 actual suspend fun KFirebaseUser.kSignOut(): Result<Boolean?> {
@@ -310,4 +331,17 @@ actual suspend fun KFirebaseUser.linkProvider(credential: AuthCredential): Resul
             }
         }
     }
+
+
+}
+
+actual class MultiFactorInfo(private val ios: cocoapods.FirebaseAuth.FIRMultiFactorInfo) {
+    actual val displayName: String?
+        get() = ios.displayName()
+    actual val enrollmentTime: Double?
+        get() = ios.enrollmentDate().timeIntervalSinceReferenceDate
+    actual val factorId: String
+        get() = ios.factorID()
+    actual val uid: String
+        get() = ios.UID()
 }

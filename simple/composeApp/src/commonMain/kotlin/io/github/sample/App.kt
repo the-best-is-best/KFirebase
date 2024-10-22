@@ -11,12 +11,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.firebase_core.KFirebaseCore
 import io.github.firebase_database.KFirebaseDatabase
 import io.github.sample.theme.AppTheme
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 
@@ -27,6 +29,8 @@ internal fun App() = AppTheme {
     val app = KFirebaseCore.app()
     println(app.options) // Check this log
     val db = KFirebaseDatabase()
+
+    val scope = rememberCoroutineScope()
 
     val books = mutableListOf(
         mapOf(
@@ -119,9 +123,13 @@ internal fun App() = AppTheme {
 
             ElevatedButton(
                 onClick = {
-                    db.writeList(path, books) {
-                        it.onSuccess {
+                    scope.launch {
+                        val res = db.writeList(path, books)
+                        res.onSuccess {
                             println("success add books")
+                        }
+                        res.onFailure {
+                            println("add books error $it")
                         }
                     }
 
@@ -130,11 +138,12 @@ internal fun App() = AppTheme {
             }
             Spacer(Modifier.height(20.dp))
           ElevatedButton(onClick = {
-              db.addObserveListener(path){
-                  it.onSuccess {
+              scope.launch {
+                  val res = db.addObserveListener(path)
+                  res.onSuccess {
                       println("new value in listener $it")
                   }
-                  it.onFailure {
+                  res.onFailure {
                       println("new value in listener error $it")
                   }
               }
@@ -158,12 +167,14 @@ internal fun App() = AppTheme {
                     "rating" to 3.81,
                     "description" to "A story about teenage angst and alienation, narrated by the iconic character Holden Caulfield."
                 )
-                books.add(newBook)
-                db.write("$path/$newId", newBook){
-                    it.onSuccess {
+                scope.launch {
+                    val res = db.write("$path/$newId", newBook)
+                    res.onSuccess {
                         println("data write")
+                        books.add(newBook)
+
                     }
-                    it.onFailure {
+                    res.onFailure {
                         println("data failed write")
                     }
                 }

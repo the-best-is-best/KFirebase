@@ -11,14 +11,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.firebase_core.KFirebaseCore
 import io.github.firebase_firestore.KFirebaseFirestore
 import io.github.sample.theme.AppTheme
-
-
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -28,6 +28,7 @@ internal fun AppFirestore() = AppTheme {
     val app = KFirebaseCore.app()
     println(app.options) // Check this log
     val db = KFirebaseFirestore()
+    val scope = rememberCoroutineScope()
     val users = listOf(
         mapOf(
             "id" to 1,
@@ -89,17 +90,21 @@ internal fun AppFirestore() = AppTheme {
             ElevatedButton(
                 onClick = {
                     users.forEach {
-                        db.addDocument(
-                            collection,
-                            it["id"].toString(),
-                            it
-                        ) {
-                            it.onFailure {
+                        scope.launch {
+                            val res = db.addDocument(
+                                collection,
+                                it["id"].toString(),
+                                it
+                            )
+                            res.onFailure {
                                 println("error add doc $it")
                             }
+                            res.onSuccess {
+                                println("doc added")
+                            }
                         }
-                    }
 
+                    }
                 }) {
                 Text("Add list dummy users data")
             }
@@ -108,13 +113,15 @@ internal fun AppFirestore() = AppTheme {
             ElevatedButton(
 
                 onClick = {
-                    db.getDocuments(collection) {
-                        it.onSuccess {
+                    scope.launch {
+                        val res = db.getDocuments(collection)
+                        res.onSuccess {
                             println("get list of data is $it")
                         }
-                        it.onFailure {
+                        res.onFailure {
                             println("error get list data $it")
                         }
+
                     }
                 }) {
                 Text("get users data")
@@ -133,13 +140,14 @@ internal fun AppFirestore() = AppTheme {
                             "value" to "reading"
                         )
                     )
-
-                    db.queryDocuments(collection, filters, orderBy = "age") {
-                        it.onSuccess {
+                    scope.launch {
+                        val res = db.queryDocuments(collection, filters, orderBy = "age")
+                        res.onSuccess {
                             println("data is ${it}")
                         }
 
                     }
+
                 }) {
                 Text("Example filters   ")
             }
@@ -149,23 +157,29 @@ internal fun AppFirestore() = AppTheme {
             ElevatedButton(
 
                 onClick = {
-                    db.getDocumentById(collection, users.last()["id"].toString()) {
-                        it.onFailure {
+                    scope.launch {
+                        val res = db.getDocumentById(collection, users.last()["id"].toString())
+                        res.onFailure {
                             println("error get data $it")
                         }
-                        it.onSuccess {
+                        res.onSuccess {
                             println("doc data $it")
                         }
                     }
+
                 }) {
                 Text("get user data")
             }
             Spacer(Modifier.height(20.dp))
             ElevatedButton(
                 onClick = {
-                    db.deleteDocument(collection, users.last()["id"].toString()) {
-                        it.onFailure {
+                    scope.launch {
+                        val res = db.deleteDocument(collection, users.last()["id"].toString())
+                        res.onFailure {
                             println("delete data error $it")
+                        }
+                        res.onSuccess {
+                            println("data deleted")
                         }
                     }
                 }) {

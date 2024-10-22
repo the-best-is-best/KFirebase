@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
 import io.github.firebase_auth.KFirebaseAuth.Companion.currentUser
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -294,4 +295,21 @@ actual class MultiFactorInfo(private val android: com.google.firebase.auth.Multi
         get() = android.factorId
     actual val uid: String
         get() = android.uid
+}
+
+actual suspend fun KFirebaseUser.linkProvider(credential: AuthCredential): Result<KFirebaseUser?> {
+    return try {
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            val result = user.linkWithCredential(credential.android).await()
+            // Return the linked user as KFirebaseUser
+            Result.success(result.user?.toModel())
+        } else {
+            // Handle the case when there is no authenticated user
+            Result.failure(Exception("No authenticated user found"))
+        }
+    } catch (e: Exception) {
+        // Handle any exceptions during the linking process
+        Result.failure(e)
+    }
 }

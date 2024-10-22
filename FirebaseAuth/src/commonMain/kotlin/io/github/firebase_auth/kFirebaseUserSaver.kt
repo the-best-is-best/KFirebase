@@ -7,215 +7,293 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.launch
 
 class KFirebaseUserState {
     var user by mutableStateOf<KFirebaseUser?>(null)
         private set
     private val auth = KFirebaseAuth()
-init {
-     getCurrentUser {
-         
-     }
+
+    init {
+        CoroutineScope(Dispatchers.IO).launch {
+            getCurrentUser()
+        }
 }
-    fun getCurrentUser(callback: (Result<Boolean?>) -> Unit) {
-        auth.currentUser { it ->
-            it.onSuccess {
+
+    suspend fun getCurrentUser(): Result<Boolean?> {
+        val res = auth.currentUser()
+
+        if (res.isSuccess) {
+            res.onSuccess {
                 user = it
-                callback(Result.success(true))
+
             }
-            it.onFailure {
-                callback(Result.failure(it))
+            return Result.success(true)
+
+        } else {
+            res.onFailure {
+                return Result.failure(it)
             }
+
+            return Result.failure(res.exceptionOrNull() ?: Exception())
         }
+
     }
 
-    fun signInAnonymously(callback: (Result<Boolean?>) -> Unit) {
-        auth.signInAnonymously { it ->
-            it.onSuccess {
-                print("user sign ${it!!.uid}")
+
+    suspend fun signInAnonymously(): Result<Boolean?> {
+        val res = auth.signInAnonymously()
+
+        if (res.isSuccess) {
+            res.onSuccess {
                 user = it
-                callback(Result.success(true))
+
             }
-            it.onFailure {
-                println("error signInAnonymously $it")
-                callback(Result.failure(it))
+            return Result.success(true)
+
+        } else {
+            res.onFailure {
+                return Result.failure(it)
             }
+
+            return Result.failure(res.exceptionOrNull() ?: Exception())
         }
+
     }
 
-    fun createUserWithEmailAndPassword(
+    suspend fun createUserWithEmailAndPassword(
         email: String,
         password: String,
-        callback: (Result<Boolean?>) -> Unit
-    ) {
-        auth.createUserWithEmailAndPassword(email, password) {
-            it.onSuccess {
+    ): Result<Boolean?> {
+        val res = auth.createUserWithEmailAndPassword(email, password)
+
+        if (res.isSuccess) {
+            res.onSuccess {
                 user = it
-                callback(Result.success(true))
+
             }
-            it.onFailure {
-                callback(Result.failure(it))
+            return Result.success(true)
+
+        } else {
+            res.onFailure {
+                return Result.failure(it)
             }
+
+            return Result.failure(res.exceptionOrNull() ?: Exception())
         }
+
+       
     }
 
-    fun signInWithEmailAndPassword(
+    suspend fun signInWithEmailAndPassword(
         email: String,
         password: String,
-        callback: (Result<Boolean?>) -> Unit
-    ) {
-        auth.signInWithEmailAndPassword(email, password) {
-            it.onSuccess {
-                user = it
-                callback(Result.success(true))
-            }
-            it.onFailure {
-                callback(Result.failure(it))
-            }
+    ): Result<Boolean?> {
+        val res = auth.signInWithEmailAndPassword(email, password)
+
+        res.onSuccess {
+            user = it
+            return Result.success(true)
+
         }
+
+        res.onFailure {
+            return Result.failure(res.exceptionOrNull() ?: Exception())
+
+        }
+        return Result.success(false)
+
     }
 
     fun setLanguageCodeLocale(locale: String) {
         auth.setLanguageCodeLocale(locale)
     }
 
-    fun updateProfile(
+    suspend fun updateProfile(
         displayName: String?,
         photoUrl: String?,
-        callback: (Result<Boolean?>) -> Unit
-    ) {
-        auth.kUpdateProfile(displayName, photoUrl) { it ->
-            it.onSuccess {
-                println("Profile updated successfully: $it") // Debugging line
-                user = user?.copy(
-                    displayName = displayName,
-                    photoURL = photoUrl
-                )
-                callback(Result.success(true))
+    ): Result<Boolean?> {
+        val res = auth.kUpdateProfile(displayName, photoUrl)
+
+        if (res.isSuccess) {
+            res.onSuccess {
+                user = user!!.copy(displayName = displayName, photoURL = photoUrl)
+
             }
-            it.onFailure { exception ->
-                println("Failed to update profile: ${exception.message}") // Debugging line
-                callback(Result.failure(exception))
+            return Result.success(true)
+
+        } else {
+            res.onFailure {
+                return Result.failure(it)
             }
+
+            return Result.failure(res.exceptionOrNull() ?: Exception())
         }
+
+    
+
     }
 
 
-    fun signInWithCredential(credential: AuthCredential, callback: (Result<Boolean?>) -> Unit) {
-        auth.signInWithCredential(credential) { it ->
-            it.onSuccess {
+    suspend fun signInWithCredential(credential: AuthCredential): Result<Boolean?> {
+        val res = auth.signInWithCredential(credential)
+
+        return if (res.isSuccess) {
+            Result.success(true)
+
+        } else {
+            Result.failure(res.exceptionOrNull() ?: Exception())
+        }
+
+    }
+
+    suspend fun updateEmail(email: String): Result<Boolean?> {
+        val res = user!!.kUpdateEmail(email)
+
+        return if (res.isSuccess) {
+            user = user!!.copy(email)
+            Result.success(true)
+
+        } else {
+            Result.failure(res.exceptionOrNull() ?: Exception())
+        }
+
+    }
+
+    suspend fun sendEmailVerification(): Result<Boolean?> {
+        val res = user?.kSendEmailVerification()
+
+        return if (res?.isSuccess == true) {
+            Result.success(true)
+
+        } else {
+            Result.failure(res?.exceptionOrNull() ?: Exception())
+        }
+
+    }
+
+    suspend fun resetPassword(password: String): Result<Boolean?> {
+        val res = user?.kResetPassword(password)
+
+        return if (res?.isSuccess == true) {
+            Result.success(true)
+
+        } else {
+            res?.onFailure {
+                return Result.failure(it)
+            }
+
+            Result.failure(res?.exceptionOrNull() ?: Exception())
+        }
+
+    }
+
+    suspend fun delete(): Result<Boolean?> {
+        val res = user?.kDelete()
+
+        return if (res?.isSuccess == true) {
+            user = null
+            Result.success(true)
+
+        } else {
+            res?.onFailure {
+                return Result.failure(it)
+            }
+
+            Result.failure(res?.exceptionOrNull() ?: Exception())
+        }
+
+    }
+
+    suspend fun signOut(): Result<Boolean?> {
+        val res = user!!.kSignOut()
+
+        return if (res.isSuccess) {
+            user = null
+            Result.success(true)
+
+
+        } else {
+            Result.failure(res.exceptionOrNull() ?: Exception())
+        }
+
+
+    }
+
+    suspend fun linkEmail(credential: AuthCredential): Result<Boolean?> {
+        val res = user!!.linkProvider(credential)
+
+        if (res.isSuccess) {
+            res.onSuccess {
                 user = it
-                callback(Result.success(true))
+                return Result.success(true)
             }
-            it.onFailure {
-                callback(Result.failure(it))
-            }
-        }
-    }
-
-    fun updateEmail(email: String, callback: (Result<Boolean?>) -> Unit) {
-        user?.kUpdateEmail(email) { it ->
-            it.onSuccess {
-                user = user?.copy(email = email)
-                callback(Result.success(true))
-            }
-            it.onFailure {
-                callback(Result.failure(it))
+            res.onFailure {
+                return Result.failure(it)
             }
         }
+        return Result.failure(res.exceptionOrNull() ?: Exception())
+
     }
 
-    fun sendEmailVerification(callback: (Result<Boolean?>) -> Unit) {
-        user?.kSendEmailVerification(callback)
-    }
 
-    fun resetPassword(password: String, callback: (Result<Boolean?>) -> Unit) {
-        user?.kResetPassword(password, callback)
-    }
-
-    fun delete(callback: (Result<Boolean?>) -> Unit) {
-        user?.kDelete {
-            it.onSuccess {
-                user = null
-                callback(Result.success(true))
-            }
-            it.onFailure {
-                callback(Result.failure(it))
-            }
-        }
-    }
-
-    fun signOut(callback: (Result<Boolean?>) -> Unit) {
-        user!!.kSignOut {
-            it.onSuccess {
-                user = null
-                callback(Result.success(true))
-            }
-            it.onFailure {
-                callback(Result.failure(it))
-            }
-        }
-    }
-
-    fun linkEmail(credential: AuthCredential ,callback: (Result<Boolean?>) -> Unit ){
-        user!!.linkProvider(credential){
-            it.onSuccess {
-                user = it
-                callback(Result.success(true))
-            }
-            it.onFailure {
-                callback(Result.failure(it))
-            }
-        }
-    }
     fun isEmailLinked(email: String ): Boolean{
        return auth.isLinkEmail(email)
     }
 
-    fun confirmPasswordReset(
+    suspend fun confirmPasswordReset(
         code: String,
         newPassword: String,
-        callback: (Result<Boolean?>) -> Unit
-    ) {
-        auth.confirmPasswordReset(code, newPassword, callback)
+    ): Result<Boolean?> {
+
+        return auth.confirmPasswordReset(code, newPassword)
     }
 
-    fun addListenerAuthStateChange(callback: (Result<Boolean?>) -> Unit) {
-        auth.addListenerAuthStateChange {
-            it.onSuccess {
-                if (it != null) {
-                    user = it
-                    callback(Result.success(true))
-                } else {
-                    callback(Result.success(false))
-                }
+    suspend fun addListenerAuthStateChange(): Result<Boolean?> {
+        val res = auth.addListenerAuthStateChange()
+
+        if (res.isSuccess) {
+            res.onSuccess {
+                user = it
+                return Result.success(true)
+            }
+            res.onFailure {
+                return Result.failure(it)
             }
 
+
         }
+        return Result.failure(res.exceptionOrNull() ?: Exception())
+
     }
 
-    fun addListenerIdTokenChanged(callback: (Result<Boolean?>) -> Unit) {
-        auth.addListenerIdTokenChanged {
-            it.onSuccess {
-                if (it != null) {
-                    user = it
-                    callback(Result.success(true))
-                } else {
-                    callback(Result.success(false))
-                }
+    suspend fun addListenerIdTokenChanged(): Result<Boolean?> {
+        val res = auth.addListenerIdTokenChanged()
+
+        return if (res.isSuccess) {
+            Result.success(true)
+
+        } else {
+            res.onFailure {
+                return Result.failure(it)
             }
 
+            Result.failure(res.exceptionOrNull() ?: Exception())
         }
+
     }
 
     var languageCode: String? = auth.languageCode
 
-    fun applyActionCode(code: String, callback: (Result<Boolean?>) -> Unit) {
-        auth.applyActionWithCode(code, callback)
+    suspend fun applyActionCode(code: String): Result<Boolean?> {
+        return auth.applyActionWithCode(code)
     }
 
-    fun <T : ActionCodeResult> checkActionWithCode(code: String, callback: (Result<T>) -> Unit) {
-        auth.checkActionWithCode<T>(code, callback)
+    suspend fun <T : ActionCodeResult> checkActionWithCode(code: String): Result<T> {
+        return auth.checkActionWithCode<T>(code)
     }
 
 

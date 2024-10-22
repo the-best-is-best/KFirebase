@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import io.github.firebase_core.KFirebaseCore
 import io.github.firebase_messaging.KFirebaseMessaging
 import io.github.sample.theme.AppTheme
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun AppFCM() = AppTheme {
@@ -28,7 +30,7 @@ internal fun AppFCM() = AppTheme {
     var notificationValue by remember { mutableStateOf("") }
     val app = KFirebaseCore.app()
     println(app.options) // Check this log
-
+    val scope = rememberCoroutineScope()
     // Log when setting listeners
     fcm.setNotificationClickedListener { it ->
         it.onSuccess { data ->
@@ -62,19 +64,27 @@ internal fun AppFCM() = AppTheme {
     ) {
         item {
             ElevatedButton(onClick = {
-                fcm.requestAuthorization(callback = {
-                    println("per state $it")
-                })
+                scope.launch {
+                    val res = fcm.requestAuthorization()
+                    res.onSuccess {
+                        println("per state $it")
+                    }
+                }
             }) {
                 Text("Request permissions")
             }
             Spacer(Modifier.height(30.dp))
+
+
             ElevatedButton(onClick = {
-                fcm.getToken {
-                    it.onSuccess {
+                scope.launch {
+                    val res = fcm.getToken()
+
+
+                    res.onSuccess {
                         println("token $it")
                     }
-                    it.onFailure {
+                    res.onFailure {
                         println("error token $it")
                     }
                 }
@@ -83,28 +93,31 @@ internal fun AppFCM() = AppTheme {
             }
             Spacer(Modifier.height(30.dp))
             ElevatedButton(onClick = {
-                fcm.subscribeTopic("topic_test", callback = {
-                    it.onSuccess {
+                scope.launch {
+                    val res = fcm.subscribeTopic("topic_test")
+                    res.onSuccess {
                         println("sub to topic correctly")
                     }
-                    it.onFailure {
+                    res.onFailure {
                         println("sub to topic ${it.message}")
                     }
-                })
+                }
             }) {
                 Text("subscribe topic")
             }
 
             Spacer(Modifier.height(30.dp))
             ElevatedButton(onClick = {
-                fcm.unsubscribeTopic("topic_test", callback = {
-                    it.onSuccess {
+                scope.launch {
+                    val res = fcm.unsubscribeTopic("topic_test")
+                    res.onSuccess {
                         println("un sub to topic correctly")
                     }
-                    it.onFailure {
+                    res.onFailure {
                         println("un sub to topic ${it.message}")
                     }
-                })
+                }
+
             }) {
                 Text("un subscribe topic")
             }

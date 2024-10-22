@@ -11,19 +11,21 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.firebase_auth.rememberKFirebaseUserStates
 import io.github.firebase_core.KFirebaseCore
 import io.github.sample.theme.AppTheme
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun AppAuth() = AppTheme {
     val app = KFirebaseCore.app()
     println(app.options) // Check this log
     val currentUserState = rememberKFirebaseUserStates()
-
+    val scope = rememberCoroutineScope()
 
     LazyColumn(
         modifier = Modifier
@@ -44,12 +46,16 @@ internal fun AppAuth() = AppTheme {
             ElevatedButton(
                 enabled = currentUserState.user == null,
                 onClick = {
-                    currentUserState.signInWithEmailAndPassword(
+                    scope.launch {
+                        val res = currentUserState.signInWithEmailAndPassword(
                         "eng.michelle.raouf@gmail.com",
                         "Mesho@500"
-                    ) {
-                        it.onFailure {
+                        )
+                        res.onFailure {
                             println("error auth $it")
+                        }
+                        res.onFailure {
+                            println("auth $it")
                         }
                     }
                 }) {
@@ -60,10 +66,14 @@ internal fun AppAuth() = AppTheme {
             ElevatedButton(
                 enabled = currentUserState.user == null,
                 onClick = {
-                    currentUserState.getCurrentUser {
+                    scope.launch {
+                        val res = currentUserState.getCurrentUser()
 
-                        it.onFailure {
-                            println("error auth $it")
+                        res.onFailure {
+                            println("error get user $it")
+                        }
+                        res.onSuccess {
+                            println("user is $it")
                         }
                     }
                 }) {
@@ -73,11 +83,16 @@ internal fun AppAuth() = AppTheme {
             ElevatedButton(
                 enabled = currentUserState.user != null,
                 onClick = {
-                    currentUserState.updateProfile("Michelle", null) {
-                        it.onFailure {
+                    scope.launch {
+                        val res = currentUserState.updateProfile("Michelle", null)
+                        res.onFailure {
                             println("error update profile $it")
                         }
+                        res.onSuccess {
+                            println("update profile $it")
+                        }
                     }
+
                 }) {
                 Text("Update profile")
             }
@@ -85,9 +100,13 @@ internal fun AppAuth() = AppTheme {
             ElevatedButton(
                 enabled = currentUserState.user != null,
                 onClick = {
-                    currentUserState.updateEmail("meshoraouf515@gamil.com") {
-                        it.onFailure {
+                    scope.launch {
+                        val res = currentUserState.updateEmail("meshoraouf515@gamil.com")
+                        res.onFailure {
                             println("update email error $it")
+                        }
+                        res.onSuccess {
+                            println("update email $it")
                         }
                     }
                 }) {
@@ -97,9 +116,13 @@ internal fun AppAuth() = AppTheme {
             ElevatedButton(
                 enabled = currentUserState.user != null,
                 onClick = {
-                    currentUserState.delete {
-                        it.onFailure {
+                    scope.launch {
+                        val res = currentUserState.delete()
+                        res.onFailure {
                             println("delete user $it")
+                        }
+                        res.onSuccess {
+                            println("user deleted")
                         }
                     }
                 }) {
@@ -109,8 +132,9 @@ internal fun AppAuth() = AppTheme {
             ElevatedButton(
                 enabled = currentUserState.user != null,
                 onClick = {
-                    currentUserState.signOut {
-                        it.onFailure {
+                    scope.launch {
+                        val res = currentUserState.signOut()
+                        res.onFailure {
                             println("logout user $it")
                         }
                     }
