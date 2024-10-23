@@ -20,10 +20,12 @@ import io.github.firebase_database.KFirebaseDatabase
 import io.github.sample.theme.AppTheme
 import kotlinx.coroutines.launch
 import kotlin.random.Random
+import kotlin.uuid.ExperimentalUuidApi
 
 
+@OptIn(ExperimentalUuidApi::class)
 @Composable
-internal fun App() = AppTheme {
+internal fun AppDatabase() = AppTheme {
 
 
     val app = KFirebaseCore.app()
@@ -137,22 +139,29 @@ internal fun App() = AppTheme {
                 Text("Add list dummy book data")
             }
             Spacer(Modifier.height(20.dp))
-          ElevatedButton(onClick = {
-              scope.launch {
-                  val res = db.addObserveListener(path)
-                  res.onSuccess {
-                      println("new value in listener $it")
-                  }
-                  res.onFailure {
-                      println("new value in listener error $it")
-                  }
-              }
-          }){
-              Text("Listener")
-          }
+            ElevatedButton(onClick = {
+                scope.launch {
+                    try {
+                        db.addObserveValueListener(path).collect { res ->
+                            res.onSuccess {
+                                println("New value in listener: $it")
+                            }
+                            res.onFailure {
+                                println("Error in listener: $it")
+                            }
+                        }
+
+                    } catch (e: Exception) {
+                        println("Exception while adding observer: ${e}")
+                    }
+                }
+            }) {
+                Text("Listener")
+            }
+
             Spacer(Modifier.height(20.dp))
             ElevatedButton(onClick = {
-                val newId = Random.nextInt(books.lastIndex, books.lastIndex +1)
+                val newId = Random.nextInt(100000)
                 val newBook =  mapOf(
                     "id" to newId,
                     "title" to "The Catcher in the Rye",

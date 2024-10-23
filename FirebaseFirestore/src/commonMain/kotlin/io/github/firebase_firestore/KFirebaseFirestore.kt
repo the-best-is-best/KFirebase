@@ -1,5 +1,7 @@
 package io.github.firebase_firestore
 
+import kotlinx.coroutines.flow.Flow
+
 expect class KFirebaseFirestore() {
 
     // Add a custom object to the collection
@@ -21,16 +23,12 @@ expect class KFirebaseFirestore() {
     ): Result<Map<String, Any?>>
 
     // Listen to a collection for real-time updates
-    suspend fun listenToCollection(
+    fun listenToCollection(
         collection: String,
         listenToCollectionId: String
-    ): Result<List<Map<String, Any?>>>
+    ): Flow<Result<List<Map<String, Any?>>>>
 
-    // Stop collection listener
-    fun stopListenerCollection(listenerId: String)
 
-    // Stop all listeners
-    fun stopAllListeners()
 
     // Query documents with filters, sorting, and limits
     suspend fun queryDocuments(

@@ -155,6 +155,7 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 
             implementation(project(":FirebaseAnalytics"))
 

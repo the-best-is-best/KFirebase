@@ -5,13 +5,15 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 actual class KFirebaseDatabase {
     private val database: DatabaseReference = FirebaseDatabase.getInstance().reference
-    private val listenersMap = mutableMapOf<String, ValueEventListener>()
 
     actual suspend fun write(path: String, data: Map<String, Any>): Result<Boolean?> {
         return suspendCancellableCoroutine { cont ->
@@ -90,26 +92,29 @@ actual class KFirebaseDatabase {
         }
     }
 
-    actual suspend fun addObserveListener(path: String): Result<Any?> {
-        return suspendCancellableCoroutine { cont ->
-            val listener = object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    cont.resume(Result.success(snapshot.value))
-                }
 
-                override fun onCancelled(error: DatabaseError) {
-                    cont.resumeWithException(Exception(error.message))
-                }
+    actual fun addObserveValueListener(path: String): Flow<Result<Any?>> = callbackFlow {
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // Emit the data from the snapshot as a Result
+                val data = snapshot.getValue(Any::class.java) // Adjust type as necessary
+                trySend(Result.success(data))
             }
-            database.child(path).addValueEventListener(listener)
-            listenersMap[path] = listener
-        }
-    }
 
-    actual fun removeObserver(path: String) {
-        val listener = listenersMap.remove(path)
-        if (listener != null) {
+            override fun onCancelled(error: DatabaseError) {
+                // Emit an error result if the operation is cancelled
+                trySend(Result.failure(Exception(error.message)))
+            }
+        }
+
+        // Add the listener to the Firebase database
+        database.child(path).addValueEventListener(listener)
+
+        // Cleanup when the flow is closed
+        awaitClose {
             database.child(path).removeEventListener(listener)
         }
     }
+
+
 }

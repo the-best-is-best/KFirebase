@@ -29,7 +29,7 @@ internal fun AppFirestore() = AppTheme {
     println(app.options) // Check this log
     val db = KFirebaseFirestore()
     val scope = rememberCoroutineScope()
-    val users = listOf(
+    val users = mutableListOf(
         mapOf(
             "id" to 1,
             "name" to "John",
@@ -149,7 +149,7 @@ internal fun AppFirestore() = AppTheme {
                     }
 
                 }) {
-                Text("Example filters   ")
+                Text("Example filters")
             }
 
 
@@ -184,6 +184,46 @@ internal fun AppFirestore() = AppTheme {
                     }
                 }) {
                 Text("delete data")
+            }
+            Spacer(Modifier.height(20.dp))
+            ElevatedButton(
+                onClick = {
+                    scope.launch {
+                        val res = db.listenToCollection(collection, "listen to users")
+                        res.collect { value ->
+                            value.onSuccess {
+                                println("new value listener $it")
+                            }
+                            value.onFailure {
+                                println("error new value listener $it")
+                            }
+                        }
+                    }
+                }) {
+                Text("listener data")
+            }
+            Spacer(Modifier.height(20.dp))
+
+            ElevatedButton(
+
+                onClick = {
+                    scope.launch {
+                        val res = db.addDocument(
+                            collection,
+                            (users.lastIndex + 2).toString(),
+                            users.last()
+                        )
+                        res.onSuccess {
+                            println("add User  $it")
+                            users.add(users.last())
+                        }
+                        res.onFailure {
+                            println("error add user $it")
+                        }
+
+                    }
+                }) {
+                Text("add data")
             }
         }
 

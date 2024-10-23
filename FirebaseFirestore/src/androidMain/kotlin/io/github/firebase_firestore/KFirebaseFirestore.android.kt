@@ -1,8 +1,10 @@
 package io.github.firebase_firestore
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -10,8 +12,6 @@ import kotlin.coroutines.resumeWithException
 actual class KFirebaseFirestore {
 
     private val firestore = FirebaseFirestore.getInstance()
-
-    private val listenerRegistrations: MutableMap<String, ListenerRegistration> = mutableMapOf()
 
     actual suspend fun addDocument(
         collection: String,
@@ -137,17 +137,19 @@ actual class KFirebaseFirestore {
         }.addOnFailureListener { exception -> cont.resumeWithException(exception) }
     }
 
-    actual suspend fun listenToCollection(
+
+    actual fun listenToCollection(
         collection: String,
         listenToCollectionId: String
-    ): Result<List<Map<String, Any?>>> = suspendCancellableCoroutine { continuation ->
+    ): Flow<Result<List<Map<String, Any?>>>> = callbackFlow {
         val firestore = FirebaseFirestore.getInstance()
 
+        // Register the snapshot listener
         val registration = firestore.collection(collection)
             .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
                 if (firebaseFirestoreException != null) {
                     // Resume the coroutine with an exception
-                    continuation.resumeWithException(firebaseFirestoreException)
+                    trySend(Result.failure(firebaseFirestoreException))
                     return@addSnapshotListener
                 }
 
@@ -155,28 +157,18 @@ actual class KFirebaseFirestore {
                 val documents =
                     querySnapshot?.documents?.map { it.data ?: emptyMap<String, Any?>() }
                         ?: emptyList()
+
                 // Resume the coroutine with the result
-                continuation.resume(Result.success(documents))
+                trySend(Result.success(documents))
             }
 
-        // Store the listener registration if needed for future reference
-        listenerRegistrations[listenToCollectionId] = registration
+        // Store the listener registration for future reference
 
-        // Handle cancellation
-        continuation.invokeOnCancellation {
-            registration.remove() // Remove the listener if the coroutine is cancelled
+        // Close the channel when the listener is no longer needed
+        awaitClose {
+            registration.remove() // Remove the listener when the coroutine is cancelled
         }
     }
 
 
-
-    actual fun stopListenerCollection(listenerId: String) {
-        listenerRegistrations[listenerId]?.remove()
-        listenerRegistrations.remove(listenerId)
-    }
-
-    actual fun stopAllListeners() {
-        listenerRegistrations.values.forEach { it.remove() }
-        listenerRegistrations.clear()
-    }
 }

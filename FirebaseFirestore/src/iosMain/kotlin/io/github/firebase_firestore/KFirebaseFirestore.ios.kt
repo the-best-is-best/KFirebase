@@ -1,5 +1,8 @@
 package io.github.firebase_firestore
 
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.Foundation.NSNumber
 import kotlin.coroutines.resume
@@ -55,28 +58,35 @@ actual class KFirebaseFirestore {
         }
     }
 
-    actual suspend fun listenToCollection(
+
+    actual fun listenToCollection(
         collection: String,
         listenToCollectionId: String
-    ): Result<List<Map<String, Any?>>> = suspendCancellableCoroutine { cont ->
+    ): Flow<Result<List<Map<String, Any?>>>> = callbackFlow {
         firestore.startRealTimeListener(collection, listenToCollectionId) { callbackIos ->
             val error = callbackIos?.error()
             val data = callbackIos?.data()
+
             if (error != null) {
-                cont.resumeWith(Result.failure(error.convertNSErrorToException()))
+                // Resume the flow with a failure
+                try {
+                    throw error.convertNSErrorToException()
+                } catch (e: Exception) {
+                    // Send the exception as a failure result
+                    trySend(Result.failure(e))
+                }
             } else {
-                cont.resume(Result.success(convertToListOfMaps(data)))
+                // Convert the data and send as a success result
+                trySend(Result.success(convertToListOfMaps(data)))
             }
+        }
+
+        // Clean up the listener when the flow is cancelled
+        awaitClose {
+            firestore.stopRealTimeListenerById(listenToCollectionId)
         }
     }
 
-    actual fun stopListenerCollection(listenerId: String) {
-        firestore.stopRealTimeListenerById(listenerId)
-    }
-
-    actual fun stopAllListeners() {
-        firestore.stopAllListeners()
-    }
 
     actual suspend fun queryDocuments(
         collection: String,

@@ -5,6 +5,9 @@ import cocoapods.FirebaseDatabase.FIRDataSnapshot
 import cocoapods.FirebaseDatabase.FIRDatabase
 import cocoapods.FirebaseDatabase.FIRDatabaseHandle
 import cocoapods.FirebaseDatabase.FIRDatabaseReference
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.Foundation.NSError
 import kotlin.coroutines.resume
@@ -13,7 +16,6 @@ import kotlin.coroutines.resumeWithException
 // Class to handle Firebase Database operations
 actual class KFirebaseDatabase {
     private val databaseRef: FIRDatabaseReference = FIRDatabase.database().reference()
-    private val listenersMap = mutableMapOf<String, FIRDatabaseHandle>()
 
     actual suspend fun write(
         path: String,
@@ -31,15 +33,15 @@ actual class KFirebaseDatabase {
 
     actual suspend fun read(path: String): Result<Any?> =
         suspendCancellableCoroutine { continuation ->
-        val ref = databaseRef.child(path)
-        ref.observeSingleEventOfType(FIRDataEventType.FIRDataEventTypeValue) { snapshot: FIRDataSnapshot?, error: String? ->
-            if (error != null) {
-                continuation.resumeWithException(FirebaseDatabaseException("Error reading data: $error"))
-            } else {
-                continuation.resume(Result.success(snapshot?.value))
+            val ref = databaseRef.child(path)
+            ref.observeSingleEventOfType(FIRDataEventType.FIRDataEventTypeValue) { snapshot: FIRDataSnapshot?, error: String? ->
+                if (error != null) {
+                    continuation.resumeWithException(FirebaseDatabaseException("Error reading data: $error"))
+                } else {
+                    continuation.resume(Result.success(snapshot?.value))
+                }
             }
         }
-    }
 
     actual suspend fun writeList(
         path: String,
@@ -61,25 +63,25 @@ actual class KFirebaseDatabase {
 
     actual suspend fun readList(path: String): Result<List<Any?>> =
         suspendCancellableCoroutine { continuation ->
-        val ref = databaseRef.child(path)
-        ref.observeSingleEventOfType(FIRDataEventType.FIRDataEventTypeValue) { snapshot: FIRDataSnapshot?, error: String? ->
-            if (error != null) {
-                continuation.resumeWithException(FirebaseDatabaseException("Error reading list: $error"))
-            } else {
-                val dataList = mutableListOf<Any?>()
-                val children = snapshot?.children // This returns NSEnumerator
+            val ref = databaseRef.child(path)
+            ref.observeSingleEventOfType(FIRDataEventType.FIRDataEventTypeValue) { snapshot: FIRDataSnapshot?, error: String? ->
+                if (error != null) {
+                    continuation.resumeWithException(FirebaseDatabaseException("Error reading list: $error"))
+                } else {
+                    val dataList = mutableListOf<Any?>()
+                    val children = snapshot?.children // This returns NSEnumerator
 
-                // Use a loop to iterate through the NSEnumerator
-                children?.let {
-                    while (it.nextObject() != null) {
-                        val childSnapshot = it.nextObject() as FIRDataSnapshot
-                        dataList.add(childSnapshot.value)
+                    // Use a loop to iterate through the NSEnumerator
+                    children?.let {
+                        while (it.nextObject() != null) {
+                            val childSnapshot = it.nextObject() as FIRDataSnapshot
+                            dataList.add(childSnapshot.value)
+                        }
                     }
+                    continuation.resume(Result.success(dataList))
                 }
-                continuation.resume(Result.success(dataList))
             }
         }
-    }
 
     actual suspend fun delete(path: String): Result<Boolean?> =
         suspendCancellableCoroutine { continuation ->
@@ -90,8 +92,8 @@ actual class KFirebaseDatabase {
                 } else {
                     continuation.resume(Result.success(true))
                 }
+            }
         }
-    }
 
     actual suspend fun update(path: String, data: Map<String, Any>): Result<Boolean?> =
         suspendCancellableCoroutine { continuation ->
@@ -101,28 +103,34 @@ actual class KFirebaseDatabase {
                 } else {
                     continuation.resume(Result.success(true))
                 }
-        }
-    }
 
-    actual suspend fun addObserveListener(path: String): Result<Any?> =
-        suspendCancellableCoroutine { continuation ->
+            }
+        }
+
+
+    actual fun addObserveValueListener(path: String): Flow<Result<Any?>> = callbackFlow {
         val ref = databaseRef.child(path)
-            val handle =
-                ref.observeEventType(FIRDataEventType.FIRDataEventTypeValue) { snapshot, error ->
-                    if (error != null) {
-                        continuation.resumeWithException(FirebaseDatabaseException(error))
-                    } else {
-                        continuation.resume(Result.success(snapshot?.value))
-                    }
+
+        val handle =
+            ref.observeEventType(FIRDataEventType.FIRDataEventTypeValue) { snapshot, error ->
+                if (error != null) {
+                    println("FirebaseError Error observing data: ${error}")
+                    trySend(Result.failure(FirebaseDatabaseException(error))).isSuccess
+                } else {
+                    println("FirebaseSnapshot Received snapshot: ${snapshot?.value}")
+                    trySend(Result.success(snapshot?.value)).isSuccess
                 }
-        listenersMap[path] = handle
+            }
+
+        // Ensure listener is removed when the flow collection is cancelled
+        awaitClose {
+            removeObserver(path, handle)
+        }
     }
 
-    actual fun removeObserver(path: String) {
-        val handle = listenersMap.remove(path)
-        if (handle != null) {
-            databaseRef.child(path).removeObserverWithHandle(handle)
-        }
+
+    private fun removeObserver(path: String, handle: FIRDatabaseHandle) {
+        databaseRef.child(path).removeObserverWithHandle(handle)
     }
 }
 

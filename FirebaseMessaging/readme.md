@@ -88,7 +88,7 @@ AndroidKFirebaseMessagingChannel().initChannel(
 
 ### iosApp AppDelegate example
 
-```swift
+```objectivec
 import ComposeApp
 import Firebase
 import KFirebaseMessaging  
@@ -231,6 +231,7 @@ fcm.subscribeTopic("topic_test", callback = {
 ### For un subscribe topic
 
 ```kotlin
+scope.launch {
     fcm.unsubscribeTopic("topic_test", callback = {
         it.onSuccess {
             println("un sub to topic correctly")
@@ -239,4 +240,5 @@ fcm.subscribeTopic("topic_test", callback = {
             println("un sub to topic ${it.message}")
         }
     })
+}
 ```
