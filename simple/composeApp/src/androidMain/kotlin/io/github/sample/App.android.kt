@@ -30,7 +30,7 @@ class AppActivity : ComponentActivity() {
         if (dataBundle != null) {
             KFirebaseMessagingImpl.notifyNotificationBackgroundClicked(dataBundle)
         }
-        setContent { App() }
+        setContent { AppDatabase() }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -48,5 +48,5 @@ class AppActivity : ComponentActivity() {
 @Preview
 @Composable
 fun AppPreview() {
-    App()
+    AppDatabase()
 }
