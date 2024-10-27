@@ -23,7 +23,7 @@ KFirebaseAnalytics is available on `mavenCentral()`.
 ## Installation
 
 ```kotlin
-implementation("io.github.the-best-is-best:kfirebase-analytics:1.0.0-rc1")
+implementation("io.github.the-best-is-best:kfirebase-analytics:1.0.0")
 ```
 
 ### androidMain

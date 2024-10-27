@@ -23,7 +23,7 @@ KFirebaseCore is available on `mavenCentral()`.
 ## Installation
 
 ```kotlin
-implementation("io.github.the-best-is-best:kfirebase-core:1.0.0-rc1")
+implementation("io.github.the-best-is-best:kfirebase-core:1.0.0")
 ```
 
 ### androidMain

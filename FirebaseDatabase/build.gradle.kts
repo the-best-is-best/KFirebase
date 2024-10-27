@@ -150,26 +150,15 @@ kotlin {
             }
         }
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 
             implementation(project(":FirebaseAnalytics"))
 
         }
 
-        commonTest.dependencies {
-            implementation(kotlin("test"))
-            @OptIn(ExperimentalComposeLibrary::class)
-            implementation(compose.uiTest)
-        }
 
         androidMain.dependencies {
-            implementation(compose.uiTooling)
-            implementation(libs.androidx.activityCompose)
 
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(libs.firebase.common.ktx)
