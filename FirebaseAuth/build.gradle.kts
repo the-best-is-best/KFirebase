@@ -151,15 +151,27 @@ kotlin {
             }
         }
         commonMain.dependencies {
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material3)
+            implementation(compose.components.resources)
+            implementation(compose.components.uiToolingPreview)
 
             implementation(project(":FirebaseAnalytics"))
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.runtime)
+
 
         }
 
-
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            @OptIn(ExperimentalComposeLibrary::class)
+            implementation(compose.uiTest)
+        }
 
         androidMain.dependencies {
-
+            implementation(compose.uiTooling)
             implementation(libs.firebase.common.ktx)
             //noinspection GradleDependency
             implementation(project.dependencies.platform(libs.firebase.bom))
@@ -174,11 +186,7 @@ kotlin {
 
         iosMain.dependencies {
         }
-        getByName("commonMain") {
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-            }
-        }
+
 
     }
 }

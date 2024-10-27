@@ -1,10 +1,11 @@
 [versions]
 filekitCompose = "0.8.7"
-firebaseBom = "33.5.0"
+firebaseBom = "33.5.1"
 gson = "2.11.0"
+kotlinxCoroutinesCore = "1.9.0"
 kotlinxSerializationJson = "1.7.3"
-kpermissions = "1.0.3"
-me = "1.0.0-rc4"
+kpermissions = "1.1.0"
+me = "1.0.1"
 podFirebase = "11.3.0"
 kotlin = "2.0.21"
 compose = "1.7.0"
@@ -15,6 +16,7 @@ maven-publish = "0.29.0"
 google-services = "4.4.2"
 firebaseCommonKtx = "21.0.0"
 iosDeploymentTarget = "13.0"
+runtime = "1.7.0"
 settings-api = "2.0"
 settings-language = "2.0"
 
@@ -34,8 +36,10 @@ firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 firebase-messaging-directboot = { module = "com.google.firebase:firebase-messaging-directboot" }
 firebase-storage = { module = "com.google.firebase:firebase-storage" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 kpermissions = { module = "io.github.the-best-is-best:KPermissions", version.ref = "kpermissions" }
+runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "runtime" }
 
 [plugins]
 native-cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
