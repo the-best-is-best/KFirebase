@@ -6,8 +6,8 @@ target 'iosApp' do
   use_frameworks!
 
   # Pods for iosApp
-  pod 'FirebaseCore' , '11.3.0' 
-  pod "KFirebaseMessaging" , "0.1.0-rc.1"
+  pod 'FirebaseCore' , '11.3.0'
+  pod "FirebaseMessaging" , "11.3.0"
   pod "FirebaseAnalytics" , '11.3.0'
   pod "FirebaseCrashlytics" , '11.3.0'
   pod "FirebaseAuth" , '11.3.0'

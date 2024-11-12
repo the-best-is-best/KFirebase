@@ -2,79 +2,29 @@
 
 package io.github.firebase_messaging
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import cocoapods.FirebaseMessaging.FIRMessaging
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
-import cocoapods.KFirebaseMessaging.KFirebaseMessaging as FCM
 
 
-class KFirebaseMessagingImpl : KFirebaseMessaging {
-    private var tokenListenerValue by mutableStateOf("")
-    private var onNotificationListenerValue by mutableStateOf<Map<Any?, Any?>?>(null)
-    private var onNotificationClickedListenerValue by mutableStateOf<Map<Any?, Any?>?>(null)
+actual object KFirebaseMessaging {
+    private var tokenListener: ((String?) -> Unit)? = null
 
 
-
-    override fun setTokenListener(callback: (Result<String?>) -> Unit) {
-        FCM.shared().setOnTokenReceived { token ->
-                if (token != null) {
-                    if (token != tokenListenerValue) {
-                        tokenListenerValue = token
-                        callback(Result.success(token))
-                    }
-                } else {
-                    callback(Result.failure(Exception("Token is null")))
-                }
-
+    actual fun setTokenListener(callback: (String?) -> Unit) {
+        tokenListener = callback
         }
 
+    fun notifyTokenListener(token: String?) {
+        tokenListener?.invoke(token)
     }
 
-    override fun setNotificationListener(callback: (Result<Map<Any?, *>?>) -> Unit) {
-        FCM.shared().setOnNotificationReceived { notificationData ->
-                if (notificationData != onNotificationListenerValue) {
-                    onNotificationListenerValue = notificationData
-                    callback(Result.success(notificationData))
-                }
-            }
 
-    }
-
-    override fun setNotificationClickedListener(callback: (Result<Map<Any?, *>?>) -> Unit) {
-        FCM.shared().setOnNotificationClicked { notificationData ->
-                if (onNotificationClickedListenerValue != notificationData) {
-                    onNotificationClickedListenerValue = notificationData
-                    callback(Result.success(notificationData))
-                }
-            }
-
-    }
-
-    override suspend fun requestAuthorization(): Result<Boolean> {
+    actual suspend fun getToken(): Result<String?> {
         return suspendCancellableCoroutine { cont ->
-
             try {
-                FCM.shared().requestAuthorization()
-                cont.resume(Result.success(true))
-            } catch (e: Exception) {
-                cont.resume(Result.failure(Exception(e)))
-            }
-        }
+                cont.resume(Result.success(FIRMessaging.messaging().FCMToken))
 
-    }
-
-    override suspend fun getToken(): Result<String?> {
-        return suspendCancellableCoroutine { cont ->
-
-
-            try {
-
-
-                FCM.shared().getTokenWithCompletion {
-                    cont.resume(Result.success(it))
-                }
             } catch (e: Exception) {
                 cont.resume(Result.failure(e))
             }
@@ -82,11 +32,12 @@ class KFirebaseMessagingImpl : KFirebaseMessaging {
     }
 
 
-    override suspend fun subscribeTopic(name: String): Result<Boolean> {
+    actual suspend fun subscribeTopic(name: String): Result<Boolean> {
         return suspendCancellableCoroutine { cont ->
 
             try {
-                FCM.shared().subscribeTopicWithName(name)
+                FIRMessaging.messaging().subscribeToTopic(name)
+
                 cont.resume(Result.success(true))
             } catch (e: Exception) {
                 cont.resume(Result.failure(Exception(e)))
@@ -94,11 +45,11 @@ class KFirebaseMessagingImpl : KFirebaseMessaging {
         }
     }
 
-    override suspend fun unsubscribeTopic(name: String): Result<Boolean> {
+    actual suspend fun unsubscribeTopic(name: String): Result<Boolean> {
         return suspendCancellableCoroutine { cont ->
 
             try {
-                FCM.shared().unsubscribeWithName(name)
+                FIRMessaging.messaging().unsubscribeFromTopic(name)
                 cont.resume(Result.success(true))
             } catch (e: Exception) {
                 cont.resume(Result.failure(Exception(e)))
@@ -107,5 +58,3 @@ class KFirebaseMessagingImpl : KFirebaseMessaging {
     }
 }
 
-// Provide the platform-specific implementation
-actual fun getPlatformFirebaseMessaging(): KFirebaseMessaging = KFirebaseMessagingImpl()

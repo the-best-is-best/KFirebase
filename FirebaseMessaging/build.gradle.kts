@@ -124,8 +124,8 @@ kotlin {
         ios.deploymentTarget =
             libs.versions.iosDeploymentTarget.get()  // Update this to the required version
 
-        pod("KFirebaseMessaging") {
-            version = "0.1.0-rc.1"
+        pod("FirebaseMessaging") {
+            version = libs.versions.podFirebase.get()
             extraOpts += listOf("-compiler-option", "-fmodules")
 
         }
@@ -158,13 +158,14 @@ kotlin {
             implementation(libs.firebase.common.ktx)
             implementation(libs.firebase.messaging)
             implementation(libs.gson)
-            implementation(libs.kpermissions)
 
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(project(":FirebaseCore"))
-            //noinspection GradleDependency
+
             implementation(libs.firebase.analytics)
             implementation(libs.firebase.messaging.directboot)
+            implementation(libs.klocal.notification)
+            implementation(libs.kotlinx.datetime)
 
         }
 

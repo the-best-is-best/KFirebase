@@ -46,6 +46,9 @@ kotlin {
         it.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            export(libs.klocal.notification)
+            export(project(":FirebaseMessaging"))
+
         }
     }
 
@@ -66,7 +69,9 @@ kotlin {
             implementation(project(":FirebaseStorage"))
 
             implementation(libs.filekit.compose)
+            implementation(libs.klocal.notification)
 
+            implementation(libs.klocal.notification)
 
             implementation(libs.kotlinx.serialization.json)
 
@@ -87,6 +92,8 @@ kotlin {
 
 
         iosMain.dependencies {
+            api(libs.klocal.notification)
+            api(project(":FirebaseMessaging"))
         }
 
     }
@@ -94,10 +101,10 @@ kotlin {
 
 android {
     namespace = "io.github.sample"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
-        minSdk = 26
+        minSdk = 23
 
         applicationId = "com.linkie.tech.cody"
         versionCode = 1

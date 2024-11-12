@@ -156,7 +156,6 @@ kotlin {
 
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(libs.firebase.common.ktx)
-            implementation(libs.kpermissions)
 
         }
 

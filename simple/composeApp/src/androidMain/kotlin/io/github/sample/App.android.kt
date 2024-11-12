@@ -12,6 +12,8 @@ import io.github.firebase_core.AndroidKFirebaseCore
 import io.github.firebase_messaging.AndroidKFirebaseMessagingChannel
 import io.github.firebase_messaging.KFirebaseMessagingImpl
 import io.github.vinceglb.filekit.core.FileKit
+import io.tbib.klocal_notification.AndroidKMessagingChannel
+import io.tbib.klocal_notification.LocalNotification
 
 class AppActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,27 +22,31 @@ class AppActivity : ComponentActivity() {
         FileKit.init(this)
         AndroidKFirebaseCore.initialize(this)
         AndroidKFirebaseAnalytics.initialization(this)
+
+        AndroidKMessagingChannel.initialization(this)
         AndroidKFirebaseMessagingChannel.initialization(this)
         AndroidKFirebaseMessagingChannel().initChannel(
             "fcm",
             "fcm notification",
-            R.drawable.ic_notification
+            "ic_notification"
         )
-        val dataBundle = intent.extras
-        if (dataBundle != null) {
-            KFirebaseMessagingImpl.notifyNotificationBackgroundClicked(dataBundle)
+        val data = intent.getStringExtra("data")
+        if (data != null) {
+            LocalNotification.notifyNotificationClickedListener(data)
         }
-        setContent { AppDatabase() }
+        setContent { AppFCM() }
     }
+
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         val dataBundle = intent.extras
         if (dataBundle != null) {
-            // Now pass the JSON string to the notifyNotificationClicked method
             KFirebaseMessagingImpl.notifyNotificationBackgroundClicked(dataBundle)
-
-            // Logging for debugging purposes
+        }
+        val data = intent.getStringExtra("data")
+        if (data != null) {
+            LocalNotification.notifyNotificationClickedListener(data)
         }
     }
 }

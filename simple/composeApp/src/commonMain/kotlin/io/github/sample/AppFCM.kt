@@ -22,34 +22,31 @@ import androidx.compose.ui.unit.dp
 import io.github.firebase_core.KFirebaseCore
 import io.github.firebase_messaging.KFirebaseMessaging
 import io.github.sample.theme.AppTheme
+import io.tbib.klocal_notification.LocalNotification
 import kotlinx.coroutines.launch
 
 @Composable
 internal fun AppFCM() = AppTheme {
-    val fcm = KFirebaseMessaging.create()
+    val fcm = KFirebaseMessaging
     var notificationValue by remember { mutableStateOf("") }
     val app = KFirebaseCore.app()
     println(app.options) // Check this log
     val scope = rememberCoroutineScope()
     // Log when setting listeners
-    fcm.setNotificationClickedListener { it ->
-        it.onSuccess { data ->
-            println("Notification clicked data: $data")
-            notificationValue = "Notification clicked data: ${data?.get("token").toString()}"
-        }
-    }
+    LocalNotification.setNotificationClickedListener {
+        println("Notification clicked data: $it")
+        notificationValue = "Notification clicked data: ${it.get("token").toString()}"
 
-    fcm.setNotificationListener { it ->
-        it.onSuccess { data ->
-            println("Notification received data: $data")
-            notificationValue = "Notification received data: ${data?.get("token").toString()}"
-        }
     }
+    LocalNotification.setNotificationReceivedListener {
+        println("Notification received data: $it")
+        notificationValue = "Notification received data: ${it.get("token").toString()}"
 
-    fcm.setTokenListener { it ->
-        it.onSuccess { token ->
-            println("User token: $token")
         }
+
+    fcm.setTokenListener {
+        println("User token: $it")
+
     }
 
 
@@ -65,11 +62,10 @@ internal fun AppFCM() = AppTheme {
         item {
             ElevatedButton(onClick = {
                 scope.launch {
-                    val res = fcm.requestAuthorization()
-                    res.onSuccess {
-                        println("per state $it")
+                    val res = LocalNotification.requestAuthorization()
+                    println("per state $res")
                     }
-                }
+
             }) {
                 Text("Request permissions")
             }
@@ -80,13 +76,7 @@ internal fun AppFCM() = AppTheme {
                 scope.launch {
                     val res = fcm.getToken()
 
-
-                    res.onSuccess {
-                        println("token $it")
-                    }
-                    res.onFailure {
-                        println("error token $it")
-                    }
+                    println("token $res")
                 }
             }) {
                 Text("Get token")

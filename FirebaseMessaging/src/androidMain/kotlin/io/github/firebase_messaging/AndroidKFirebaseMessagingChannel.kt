@@ -13,7 +13,7 @@ class AndroidKFirebaseMessagingChannel {
     companion object {
         private var activity: WeakReference<Activity?> = WeakReference(null)
 
-        internal var icon: Int? = null
+        internal var icon: String? = null
         internal var id: String? = null
 
         internal fun getActivity(): Activity {
@@ -27,7 +27,7 @@ class AndroidKFirebaseMessagingChannel {
 
 
     // Initialize Notification Channel
-    fun initChannel(id: String, name: String, icon: Int, channelDesc: String? = null) {
+    fun initChannel(id: String, name: String, icon: String, channelDesc: String? = null) {
         Companion.icon = icon
         Companion.id = id
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
