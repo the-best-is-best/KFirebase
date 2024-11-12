@@ -10,7 +10,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import io.github.firebase_analytics.AndroidKFirebaseAnalytics
 import io.github.firebase_core.AndroidKFirebaseCore
 import io.github.firebase_messaging.AndroidKFirebaseMessagingChannel
-import io.github.firebase_messaging.KFirebaseMessagingImpl
+import io.github.firebase_messaging.KFirebaseMessaging
 import io.github.vinceglb.filekit.core.FileKit
 import io.tbib.klocal_notification.AndroidKMessagingChannel
 import io.tbib.klocal_notification.LocalNotification
@@ -42,7 +42,7 @@ class AppActivity : ComponentActivity() {
         super.onNewIntent(intent)
         val dataBundle = intent.extras
         if (dataBundle != null) {
-            KFirebaseMessagingImpl.notifyNotificationBackgroundClicked(dataBundle)
+            KFirebaseMessaging.notifyNotificationBackgroundClicked(dataBundle)
         }
         val data = intent.getStringExtra("data")
         if (data != null) {
