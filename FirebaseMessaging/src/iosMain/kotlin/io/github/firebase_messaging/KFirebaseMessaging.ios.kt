@@ -4,16 +4,9 @@ package io.github.firebase_messaging
 
 import cocoapods.FirebaseMessaging.FIRMessaging
 import cocoapods.FirebaseMessaging.FIRMessagingDelegateProtocol
-import io.tbib.klocal_notification.LocalNotification
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.UIKit.UIApplication
 import platform.UIKit.registerForRemoteNotifications
-import platform.UserNotifications.UNUserNotificationCenter
-import platform.UserNotifications.UNUserNotificationCenterDelegateProtocol
 import kotlin.coroutines.resume
 
 
@@ -74,6 +67,10 @@ actual object KFirebaseMessaging {
                 cont.resume(Result.failure(Exception(e)))
             }
         }
+    }
+
+    actual fun deleteToken() {
+        FIRMessaging.messaging().deleteTokenWithCompletion { }
     }
 }
 

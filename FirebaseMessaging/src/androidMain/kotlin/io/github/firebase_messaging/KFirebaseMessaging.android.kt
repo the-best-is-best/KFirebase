@@ -6,7 +6,6 @@ import android.os.Bundle
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import io.tbib.klocal_notification.LocalNotification
-import kotlinx.coroutines.Delay
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -105,5 +104,9 @@ actual object KFirebaseMessaging {
            }
        }
    }
+
+    actual fun deleteToken() {
+        FirebaseMessaging.getInstance().deleteToken()
+    }
 }
 

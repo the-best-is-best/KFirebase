@@ -7,6 +7,8 @@ expect object KFirebaseMessaging {
     // Get the current token
     suspend fun getToken(): Result<String?>
 
+    fun deleteToken()
+
     // Subscribe to a topic
     suspend fun subscribeTopic(name: String): Result<Boolean>
 
