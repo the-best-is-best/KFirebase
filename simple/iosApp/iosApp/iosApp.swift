@@ -13,18 +13,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Firebase initialization
         FirebaseApp.configure()
-        
-        UNUserNotificationCenter.current().delegate = self
-         Messaging.messaging().delegate = self
-         Messaging.messaging().isAutoInitEnabled = true
-         LocalNotification.shared.requestAuthorization { granted , error in
-              
-         }
-         UIApplication.shared.registerForRemoteNotifications()
-
-    
-        
-        
+        LocalNotification.shared.doInit(userNotificationCenterDelegate: self)
+        KFirebaseMessaging.shared.doInit(messagingDelegate: self)
         
         window = UIWindow(frame: UIScreen.main.bounds)
         if let window = window {
@@ -32,10 +22,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             window.makeKeyAndVisible()
         }
         if let userInfo = launchOptions?[.remoteNotification] as? [String: AnyObject] {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        LocalNotification.shared.notifyNotificationClicked(data: userInfo)
-                    }
-                }
+            LocalNotification.shared.notifyNotificationAppOpenClicked(data: userInfo)
+
+        }
             return true
     }
 
@@ -59,7 +48,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     // Handle notification when the user interacts with it (taps on the notification)
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        print("i'm here")
         let userInfo = response.notification.request.content.userInfo
              LocalNotification.shared.notifyNotificationClicked(data: userInfo)
             completionHandler()

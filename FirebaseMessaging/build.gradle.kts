@@ -149,6 +149,7 @@ kotlin {
             implementation(project(":FirebaseAnalytics"))
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.runtime)
+            implementation(libs.klocal.notification)
 
         }
 
@@ -164,7 +165,6 @@ kotlin {
 
             implementation(libs.firebase.analytics)
             implementation(libs.firebase.messaging.directboot)
-            implementation(libs.klocal.notification)
             implementation(libs.kotlinx.datetime)
 
         }

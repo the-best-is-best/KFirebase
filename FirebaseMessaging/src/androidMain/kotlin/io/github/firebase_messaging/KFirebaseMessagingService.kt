@@ -3,6 +3,7 @@ package io.github.firebase_messaging
 import android.annotation.SuppressLint
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.google.gson.Gson
 import io.tbib.klocal_notification.LocalNotification
 import io.tbib.klocal_notification.NotificationConfig
 import kotlin.math.absoluteValue
@@ -30,10 +31,9 @@ class KFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     private fun handleDataMessage(data: Map<String, String>) {
-        val convertedData: Map<Any?, *> = data.map { it.key to it.value }.toMap()
 
         // Optionally notify that a data message was received
-        KFirebaseMessagingImpl.notifyNotificationReceived(convertedData)
+        LocalNotification.notifyReceivedNotificationListener(Gson().toJson(data))
     }
 
     @SuppressLint("LaunchActivityFromNotification")
@@ -63,6 +63,6 @@ class KFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     override fun onNewToken(token: String) {
-        KFirebaseMessagingImpl.notifyTokenRefreshed(token)
+        KFirebaseMessaging.notifyTokenRefreshed(token)
     }
 }

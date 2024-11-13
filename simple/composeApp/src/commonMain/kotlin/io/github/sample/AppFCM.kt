@@ -49,9 +49,6 @@ internal fun AppFCM() = AppTheme {
 
     }
 
-
-
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()

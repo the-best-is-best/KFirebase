@@ -6,6 +6,11 @@ import android.os.Bundle
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import io.tbib.klocal_notification.LocalNotification
+import kotlinx.coroutines.Delay
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
@@ -18,13 +23,6 @@ actual object KFirebaseMessaging {
         tokenListener = callback
     }
 
-//    internal fun setNotificationListener(callback: (Map<Any?, *>?) -> Unit) {
-//        LocalNotification.setNotificationReceivedListener(callback)
-//    }
-//
-//    internal fun setNotificationClickedListener(callback: (Map<Any?, *>?) -> Unit) {
-//       LocalNotification.setNotificationReceivedListener(callback)
-//    }
 
 
     actual suspend fun getToken(): Result<String?> {
@@ -34,7 +32,7 @@ actual object KFirebaseMessaging {
                 if (task.isSuccessful) {
                     cont.resume(Result.success(task.result))
                 } else {
-                    cont.resumeWith(
+                    cont.resume(
                         Result.failure(
                             task.exception ?: Exception("Failed to get token")
                         )
@@ -76,35 +74,36 @@ actual object KFirebaseMessaging {
         tokenListener?.invoke(newToken)
     }
 
-    internal fun notifyNotificationReceived(data: Map<Any?, *>) {
-        LocalNotification.notifyReceivedNotificationListener(Gson().toJson(data))
-    }
-
-    fun notifyNotificationClicked(dataJson: String) {
+   private  fun notifyNotificationClicked(dataJson: String) {
         LocalNotification.notifyNotificationClickedListener(dataJson)
 
     }
 
-    fun notifyNotificationBackgroundClicked(dataBundle: Bundle) {
-        if (!dataBundle.isEmpty()) {
-            // Create a map to store the key-value pairs
-            val dataMap = mutableMapOf<String, String>()
+   @OptIn(DelicateCoroutinesApi::class)
+   fun notifyNotificationBackgroundClicked(dataBundle: Bundle) {
+       GlobalScope.launch {
 
-            // Iterate over the keys in the Bundle (extras)
-            for (key in dataBundle.keySet()) {
-                // Get the value associated with the key
-                val value = dataBundle.getString(key)
-                // Add to the map if the value is not null
-                if (value != null) {
-                    dataMap[key] = value
-                }
-            }
+           if (!dataBundle.isEmpty()) {
+               // Create a map to store the key-value pairs
+               val dataMap = mutableMapOf<String, String>()
 
-            // Convert the map to a JSON string using Gson
-            val jsonString = Gson().toJson(dataMap)
-            notifyNotificationClicked(jsonString)
+               // Iterate over the keys in the Bundle (extras)
+               for (key in dataBundle.keySet()) {
+                   // Get the value associated with the key
+                   val value = dataBundle.getString(key)
+                   // Add to the map if the value is not null
+                   if (value != null) {
+                       dataMap[key] = value
+                   }
+               }
 
-        }
-    }
+               // Convert the map to a JSON string using Gson
+               val jsonString = Gson().toJson(dataMap)
+               delay(500)
+               notifyNotificationClicked(jsonString)
+
+           }
+       }
+   }
 }
 

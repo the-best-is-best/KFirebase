@@ -19,11 +19,46 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.the-best-is-best/kfirebase-messaging)](https://central.sonatype.com/artifact/io.github.the-best-is-best/kfirebase-messaging)
 
 KFirebaseMessaging is available on `mavenCentral()`.
+<br>
+
+- Note v 1.0.2 dependent on <a href="https://github.com/the-best-is-best/KLocalNotification"> KLocalNotification </a>
+
+<br>
+
+- Note add permissions notification needed android and ios
+- Note Not dependent on KFirebaseMessaging <a href="https://github.com/the-best-is-best/KFirebaseMessaging"> KFirebaseMessaging </a>
+
+<br>
 
 ## Installation
 
 ```kotlin
-implementation("io.github.the-best-is-best:kfirebase-messaging:1.0.0")
+implementation("io.github.the-best-is-best:kfirebase-messaging:1.0.2")
+implementation("io.github.the-best-is-best:klocal-notification:1.0.0-3-rc")
+```
+
+### First in gradle
+
+```gradle
+  listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach {
+        it.binaries.framework {
+            baseName = "ComposeApp"
+            isStatic = true
+            export("io.github.the-best-is-best:klocal-notification")  // Export KLocalNotification so it's available in the framework
+            export("kfirebase-messaging")
+        }
+    }
+    ...
+    iosMain.dependencies {
+          ...
+            api("io.github.the-best-is-best:klocal-notification")
+            api("kfirebase-messaging")
+        
+        }
 ```
 
 ### androidMain
@@ -32,27 +67,36 @@ implementation("io.github.the-best-is-best:kfirebase-messaging:1.0.0")
 
 KAndroidFirebaseCore.initialize(this)
 AndroidKFirebaseMessagingChannel.initialization(this)
-AndroidKFirebaseMessagingChannel().initChannel(
-    "fcm",  // id
-    "fcm notification", // name
-    R.drawable.ic_notification // icon
-)
+
+AndroidKMessagingChannel.initialization(this)
+ AndroidKFirebaseMessagingChannel().initChannel(
+            "fcm",
+            "fcm notification",
+            "ic_notification"
+        )
   
       //this for get data fcm when app reopen
-      val dataBundle = intent.extras
-      if (dataBundle != null) {
-          KFirebaseMessagingImpl.notifyNotificationBackgroundClicked(dataBundle)
-      }
+     
         // already added
   setContent { App() }
-  }
+   val data = intent.getStringExtra("data")
+    if (data != null) {
+        LocalNotification.notifyNotificationClickedListener(data)
+    }
+
   
   // for get data fcm in app background
-  override fun onNewIntent(intent: Intent) {
+   override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         val dataBundle = intent.extras
         if (dataBundle != null) {
-            KFirebaseMessagingImpl.notifyNotificationBackgroundClicked(dataBundle)
+                KFirebaseMessaging.notifyNotificationBackgroundClicked(dataBundle)
+
+        }
+        // IF you will create local notification
+        val data = intent.getStringExtra("data")
+        if (data != null) {
+            LocalNotification.notifyNotificationClickedListener(data)
         }
     }
   
@@ -83,7 +127,7 @@ AndroidKFirebaseMessagingChannel().initChannel(
 ## Need add this in pod file if not exist run ` pod init `
 
 ```pod
- pod 'KFirebaseMessaging' , '0.1.0-rc.1'
+pod "FirebaseMessaging" , "11.3.0"
 ```
 
 ### iosApp AppDelegate example
@@ -110,21 +154,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     // Firebase initialization
     FirebaseApp.configure()
 
-    // Initialize Firebase messaging delegate and notification center delegate
-    let firebaseMessaging = KFirebaseMessaging.shared
-    firebaseMessaging.initDelegate(notificationDelegate: self, messagesDelegate: self)
-    firebaseMessaging.requestAuthorization()
-    // Request notifications permissions
+    LocalNotification.shared.doInit(userNotificationCenterDelegate: self)
+        KFirebaseMessaging.shared.doInit(messagingDelegate: self)
 
     window = UIWindow(frame: UIScreen.main.bounds)
     if let window = window {
       window.rootViewController = MainKt.MainViewController()
       window.makeKeyAndVisible()
     }
-    if let remoteNotification = launchOptions?[.remoteNotification] as? [String: AnyObject] {
+      // this is the same in logic in local notification
+     i if let userInfo = launchOptions?[.remoteNotification] as? [String: AnyObject] {
+            LocalNotification.shared.notifyNotificationAppOpenClicked(data: userInfo)
 
-      KFirebaseMessaging.shared.notifyMessagingClicked(remoteNotification)
-    }
+        }
+     
     return true
   }
 
@@ -135,61 +178,56 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     KFirebaseMessaging.shared.application(
       application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
   }
+    // Register for remote notifications and handle device token registration
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        print("APNS Token: \(deviceToken)")
+        Messaging.messaging().apnsToken = deviceToken
+    }
 
-  // Handle failure to register for remote notifications
-  func application(
-    _ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error
-  ) {
-    KFirebaseMessaging.shared.application(
-      application, didFailToRegisterForRemoteNotificationsWithError: error)
-  }
+    // Handle failure to register for remote notifications
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("Failed to register for remote notifications: \(error.localizedDescription)")
+    }
 
-  // Handle notification when the app is in the foreground
-  func userNotificationCenter(
-    _ center: UNUserNotificationCenter, willPresent notification: UNNotification,
-    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
-  ) {
-    KFirebaseMessaging.shared.userNotificationCenter(
-      center, willPresent: notification, withCompletionHandler: completionHandler)
-  }
+    // Handle notification when the app is in the foreground
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        let userInfo = notification.request.content.userInfo
+        LocalNotification.shared.notifyNotificationReceived(data: userInfo)
+        completionHandler([.alert, .sound, .badge]) // Show notification in the foreground
+    }
 
-  // Handle notification when the user interacts with it (taps on the notification)
-  func userNotificationCenter(
-    _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
-    withCompletionHandler completionHandler: @escaping () -> Void
-  ) {
-    KFirebaseMessaging.shared.userNotificationCenter(
-      center, didReceive: response, withCompletionHandler: completionHandler)
-  }
+    // Handle notification when the user interacts with it (taps on the notification)
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        let userInfo = response.notification.request.content.userInfo
+             LocalNotification.shared.notifyNotificationClicked(data: userInfo)
+            completionHandler()
+    }
 
-  // Firebase Messaging delegate method for receiving FCM token
-  func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-    KFirebaseMessaging.shared.messaging(messaging, didReceiveRegistrationToken: fcmToken)
-  }
-}
-
+    // Firebase Messaging delegate method for receiving FCM token
+    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        KFirebaseMessaging.shared.notifyTokenListener(token: fcmToken)
+    }
 ```
 
 ### How use it
 
 ```kotlin
-// this lines add it in compose func direct
-     val fcm = KFirebaseMessaging.create()
-   fcm.setNotificationClickedListener { it ->
-    it.onSuccess { data ->
-        println("Notification clicked data: $data")
-        notificationValue = "Notification clicked data: ${data?.get("token").toString()}"
-    }
-}
+// this lines add it in  App()
 
-fcm.setNotificationListener { it ->
-    it.onSuccess { data ->
-        println("Notification received data: $data")
-        notificationValue = "Notification received data: ${data?.get("token").toString()}"
-    }
-}
+    LocalNotification.setNotificationClickedListener {
+        println("Notification clicked data: $it")
+      
 
-fcm.setTokenListener { it -> it.onSuccess { token -> println("User token: $token") } }
+    }
+    LocalNotification.setNotificationReceivedListener {
+        println("Notification received data: $it")
+        
+    }
+    fcm.setTokenListener {
+        println("User token: $it")
+
+    }
+
 ```
 
 <br>
