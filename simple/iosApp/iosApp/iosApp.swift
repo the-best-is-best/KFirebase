@@ -22,7 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             window.makeKeyAndVisible()
         }
         if let userInfo = launchOptions?[.remoteNotification] as? [String: AnyObject] {
-            LocalNotification.shared.notifyNotificationAppOpenClicked(data: userInfo)
+         //   LocalNotification.shared.notifyNotification(data: userInfo)
 
         }
             return true
@@ -41,15 +41,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     // Handle notification when the app is in the foreground
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        let userInfo = notification.request.content.userInfo
-        LocalNotification.shared.notifyNotificationReceived(data: userInfo)
         completionHandler([.alert, .sound, .badge]) // Show notification in the foreground
     }
 
     // Handle notification when the user interacts with it (taps on the notification)
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         let userInfo = response.notification.request.content.userInfo
-             LocalNotification.shared.notifyNotificationClicked(data: userInfo)
+        LocalNotification.shared.notifyNotification(data: userInfo)
             completionHandler()
     }
 

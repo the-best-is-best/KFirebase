@@ -18,7 +18,7 @@ class KFirebaseMessagingService : FirebaseMessagingService() {
 
         // Handle both notification and data messages
         remoteMessage.data.isNotEmpty().let { hasData ->
-            if (hasData) {
+            if (hasData && remoteMessage.notification?.body == null) {
                 handleDataMessage(remoteMessage.data)
 
             }
@@ -32,8 +32,7 @@ class KFirebaseMessagingService : FirebaseMessagingService() {
 
     private fun handleDataMessage(data: Map<String, String>) {
 
-        // Optionally notify that a data message was received
-        LocalNotification.notifyReceivedNotificationListener(Gson().toJson(data))
+        LocalNotification.notifyNotificationListener(Gson().toJson(data))
     }
 
     @SuppressLint("LaunchActivityFromNotification")

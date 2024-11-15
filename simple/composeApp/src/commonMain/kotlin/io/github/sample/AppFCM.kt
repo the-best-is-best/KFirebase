@@ -27,22 +27,18 @@ import kotlinx.coroutines.launch
 
 @Composable
 internal fun AppFCM() = AppTheme {
+    var dataNotification by remember { mutableStateOf<Map<Any?, *>>(mapOf("" to "")) }
+
     val fcm = KFirebaseMessaging
-    var notificationValue by remember { mutableStateOf("") }
     val app = KFirebaseCore.app()
     println(app.options) // Check this log
     val scope = rememberCoroutineScope()
     // Log when setting listeners
-    LocalNotification.setNotificationClickedListener {
-        println("Notification clicked data: $it")
-        notificationValue = "Notification clicked data: ${it.get("token").toString()}"
-
+    LocalNotification.setNotificationListener {
+        println("notification received is $it")
+        dataNotification = it
     }
-    LocalNotification.setNotificationReceivedListener {
-        println("Notification received data: $it")
-        notificationValue = "Notification received data: ${it.get("token").toString()}"
 
-        }
 
     fcm.setTokenListener {
         println("User token: $it")
@@ -110,7 +106,7 @@ internal fun AppFCM() = AppTheme {
             }
             Spacer(Modifier.height(30.dp))
 
-            Text(notificationValue)
+            Text("notification received is $dataNotification")
 
             Spacer(Modifier.height(30.dp))
             ElevatedButton(onClick = {

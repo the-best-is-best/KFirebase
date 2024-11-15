@@ -79,24 +79,20 @@ AndroidKMessagingChannel.initialization(this)
      
         // already added
   setContent { App() }
-   val data = intent.getStringExtra("data")
-    if (data != null) {
-        LocalNotification.notifyNotificationClickedListener(data)
-    }
+val dataBundle = intent.extras
+if (dataBundle != null) {
+    KFirebaseMessaging.notifyNotificationClicked(dataBundle)
+
+}
 
   
   // for get data fcm in app background
    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        val dataBundle = intent.extras
+      val dataBundle = intent.extras
         if (dataBundle != null) {
-                KFirebaseMessaging.notifyNotificationBackgroundClicked(dataBundle)
+            KFirebaseMessaging.notifyNotificationClicked(dataBundle)
 
-        }
-        // IF you will create local notification
-        val data = intent.getStringExtra("data")
-        if (data != null) {
-            LocalNotification.notifyNotificationClickedListener(data)
         }
     }
   
@@ -162,9 +158,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
       window.rootViewController = MainKt.MainViewController()
       window.makeKeyAndVisible()
     }
-      // this is the same in logic in local notification
+      // not need add this now
      i if let userInfo = launchOptions?[.remoteNotification] as? [String: AnyObject] {
-            LocalNotification.shared.notifyNotificationAppOpenClicked(data: userInfo)
+            LocalNotification.shared.notifyNotification(data: userInfo)
 
         }
      
@@ -190,16 +186,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
 
     // Handle notification when the app is in the foreground
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        print("APNS Token: \(deviceToken)")
+        Messaging.messaging().apnsToken = deviceToken
+    }
+
+    // Handle failure to register for remote notifications
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("Failed to register for remote notifications: \(error.localizedDescription)")
+    }
+
+    // Handle notification when the app is in the foreground
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        let userInfo = notification.request.content.userInfo
-        LocalNotification.shared.notifyNotificationReceived(data: userInfo)
         completionHandler([.alert, .sound, .badge]) // Show notification in the foreground
     }
 
     // Handle notification when the user interacts with it (taps on the notification)
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         let userInfo = response.notification.request.content.userInfo
-             LocalNotification.shared.notifyNotificationClicked(data: userInfo)
+        LocalNotification.shared.notifyNotification(data: userInfo)
             completionHandler()
     }
 
@@ -212,21 +217,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 ### How use it
 
 ```kotlin
-// this lines add it in  App()
-
-    LocalNotification.setNotificationClickedListener {
-        println("Notification clicked data: $it")
-      
-
+LocalNotification.setNotificationListener {
+    println("notification received is $it")
+    dataNotification = it
     }
-    LocalNotification.setNotificationReceivedListener {
-        println("Notification received data: $it")
-        
-    }
-    fcm.setTokenListener {
-        println("User token: $it")
 
-    }
 
 ```
 

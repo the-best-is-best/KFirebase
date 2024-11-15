@@ -6,17 +6,12 @@ import android.os.Bundle
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import io.tbib.klocal_notification.LocalNotification
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 actual object KFirebaseMessaging {
     private var tokenListener: ((String?) -> Unit)? = null
-//    private var notificationListener: ((Map<Any?, *>?) -> Unit)? = null
-//    private var notificationClickedListener: ((Map<Any?, *>?) -> Unit)? = null
+
 
     actual fun setTokenListener(callback: (String?) -> Unit) {
         tokenListener = callback
@@ -73,37 +68,28 @@ actual object KFirebaseMessaging {
         tokenListener?.invoke(newToken)
     }
 
-   private  fun notifyNotificationClicked(dataJson: String) {
-        LocalNotification.notifyNotificationClickedListener(dataJson)
 
+    fun notifyNotificationClicked(dataBundle: Bundle) {
+        if (!dataBundle.isEmpty()) {
+            // Create a map to store the key-value pairs
+            val dataMap = mutableMapOf<String, String>()
+
+            // Iterate over the keys in the Bundle (extras)
+            for (key in dataBundle.keySet()) {
+                // Get the value associated with the key
+                val value = dataBundle.getString(key)
+                // Add to the map if the value is not null
+                if (value != null) {
+                    dataMap[key] = value
+                }
+            }
+
+            // Convert the map to a JSON string using Gson
+            val jsonString = Gson().toJson(dataMap)
+            LocalNotification.notifyNotificationListener(jsonString)
+
+        }
     }
-
-   @OptIn(DelicateCoroutinesApi::class)
-   fun notifyNotificationBackgroundClicked(dataBundle: Bundle) {
-       GlobalScope.launch {
-
-           if (!dataBundle.isEmpty()) {
-               // Create a map to store the key-value pairs
-               val dataMap = mutableMapOf<String, String>()
-
-               // Iterate over the keys in the Bundle (extras)
-               for (key in dataBundle.keySet()) {
-                   // Get the value associated with the key
-                   val value = dataBundle.getString(key)
-                   // Add to the map if the value is not null
-                   if (value != null) {
-                       dataMap[key] = value
-                   }
-               }
-
-               // Convert the map to a JSON string using Gson
-               val jsonString = Gson().toJson(dataMap)
-               delay(500)
-               notifyNotificationClicked(jsonString)
-
-           }
-       }
-   }
 
     actual fun deleteToken() {
         FirebaseMessaging.getInstance().deleteToken()
