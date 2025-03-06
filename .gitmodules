@@ -1,0 +1,3 @@
+[submodule "KFirebaseCore"]
+	path = KFirebaseCore
+	url = https://github.com/the-best-is-best/KFirebaseCore

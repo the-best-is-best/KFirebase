@@ -172,7 +172,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.KFirebaseAnalytics"
+    namespace = "io.github.kfirebase_analytics"
     compileSdk = 35
 
     defaultConfig {
