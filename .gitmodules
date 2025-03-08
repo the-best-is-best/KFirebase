@@ -4,3 +4,6 @@
 [submodule "KFirebaseAnalytics"]
 	path = KFirebaseAnalytics
 	url = https://github.com/the-best-is-best/KFirebaseAnalytics
+[submodule "TouchLabCrashlytics"]
+	path = TouchLabCrashlytics
+	url = https://github.com/the-best-is-best/TouchLabCrashlytics
