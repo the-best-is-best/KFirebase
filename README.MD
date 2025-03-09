@@ -30,6 +30,11 @@
     <td style="text-align:center;"><img src="https://img.shields.io/badge/%20✓-green?style=flat-square&color=276221" alt="✓"></td>
     <td style="text-align:center;"><a href="https://github.com/the-best-is-best/TouchLabCrashlytics/blob/main/readme.MD">Click me</a></td>
   </tr>
+   <tr>
+    <td style="">Firebase Remote Config</td>
+    <td style="text-align:center;"><img src="https://img.shields.io/badge/%20✓-green?style=flat-square&color=276221" alt="✓"></td>
+    <td style="text-align:center;"><a href="https://github.com/the-best-is-best/KFirebaseRemoteConfig/blob/main/README.MD">Click me</a></td>
+  </tr>
     <tr>
     <td style="">Firebase Auth</td>
     <td style="text-align:center;"><img src="https://img.shields.io/badge/%20✓-green?style=flat-square&color=ffd32c" alt="✓"></td>

@@ -7,3 +7,6 @@
 [submodule "TouchLabCrashlytics"]
 	path = TouchLabCrashlytics
 	url = https://github.com/the-best-is-best/TouchLabCrashlytics
+[submodule "KFirebaseRemoteConfig"]
+	path = KFirebaseRemoteConfig
+	url = https://github.com/the-best-is-best/KFirebaseRemoteConfig
