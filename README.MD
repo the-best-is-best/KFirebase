@@ -14,8 +14,8 @@
   </tr>
   <tr>
     <td style="">Firebase Messaging</td>
-    <td style="text-align:center;"><img src="https://img.shields.io/badge/%20x-red?style=flat-square&color=C30010" alt="✓"></td>
-    <td style="text-align:center;"><a href="https://github.com/the-best-is-best/KFirebase/blob/main/FirebaseMessaging/readme.md">Click me</a></td>
+    <td style="text-align:center;"><img src="https://img.shields.io/badge/%20✓-green?style=flat-square&color=276221" alt="✓"></td>
+    <td style="text-align:center;"><a href="https://github.com/the-best-is-best/KFirebaseMessaging/blob/main/README.md">Click me</a></td>
   </tr>
   <tr>
     <td style="">Firebase Analytics</td>

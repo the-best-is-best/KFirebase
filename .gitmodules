@@ -10,3 +10,6 @@
 [submodule "KFirebaseRemoteConfig"]
 	path = KFirebaseRemoteConfig
 	url = https://github.com/the-best-is-best/KFirebaseRemoteConfig
+[submodule "KFirebaseMessaging"]
+	path = KFirebaseMessaging
+	url = https://github.com/the-best-is-best/KFirebaseMessaging
