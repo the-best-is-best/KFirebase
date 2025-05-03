@@ -13,3 +13,6 @@
 [submodule "KFirebaseMessaging"]
 	path = KFirebaseMessaging
 	url = https://github.com/the-best-is-best/KFirebaseMessaging
+[submodule "kmmFirebaseFireStore"]
+	path = kmmFirebaseFireStore
+	url = https://github.com/the-best-is-best/kmmFirebaseFireStore
