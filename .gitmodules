@@ -16,3 +16,6 @@
 [submodule "kmmFirebaseFireStore"]
 	path = kmmFirebaseFireStore
 	url = https://github.com/the-best-is-best/kmmFirebaseFireStore
+[submodule "KFirebaseStorage"]
+	path = KFirebaseStorage
+	url = https://github.com/the-best-is-best/KFirebaseStorage
