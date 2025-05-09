@@ -34,8 +34,8 @@
   </tr>
     <tr>
     <td style="">Firebase Auth</td>
-    <td style="text-align:center;"><img src="https://img.shields.io/badge/%20x-red?style=flat-square&color=C30010" alt="x"></td>
-    <td style="text-align:center;"><a href="https://github.com/the-best-is-best/KFirebase/blob/main/FirebaseAuth/readme.md">Click me</a></td>
+    <td style="text-align:center;"><img src="https://img.shields.io/badge/%20✓-red?style=flat-square&color=FFD700" alt="✓"></td>
+    <td style="text-align:center;"><a href="https://github.com/the-best-is-best/KFirebaseAuth/blob/main/README.MD">Click me</a></td>
   
 </tr>
     <tr>
