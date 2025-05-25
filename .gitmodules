@@ -22,3 +22,6 @@
 [submodule "kfirebaseAuth"]
 	path = kfirebaseAuth
 	url = https://github.com/the-best-is-best/kfirebaseAuth
+[submodule "KFirebaseCrashlytics"]
+	path = KFirebaseCrashlytics
+	url = https://github.com/the-best-is-best/KFirebaseCrashlytics
